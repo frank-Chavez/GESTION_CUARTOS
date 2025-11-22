@@ -1,0 +1,12 @@
+{
+"scripts": {
+    "dev": "tailwindcss -i ./static/src/input.css -o ./static/css/output.css --watch",
+    "build": "tailwindcss -i ./static/src/input.css -o ./static/css/output.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.18"
+  },
+  "dependencies": {
+    "flowbite": "^4.0.1"
+  }
+}

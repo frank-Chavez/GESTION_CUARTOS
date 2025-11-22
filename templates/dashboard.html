@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/output.css') }}"
+    />
+  </head>
+
+  <body class="bg-[#ffffff]">
+    <header class="bg-slate-500 p-2">
+      <!-- drawer init and show -->
+      <div class="text-start">
+        <button
+          class="p-1 m-3 bg-white rounded-md"
+          type="button"
+          data-drawer-target="drawer-navigation"
+          data-drawer-show="drawer-navigation"
+          aria-controls="drawer-navigation"
+        >
+          <img src="/static/icons/menu.svg" alt="" />
+        </button>
+      </div>
+
+      <!-- drawer component -->
+      <div
+        id="drawer-navigation"
+        class="fixed top-0 left-0 z-40 h-screen p-4 overflow-y-auto transition-transform -translate-x-full bg-neutral-primary-soft w-80 border-e border-default bg-white"
+        tabindex="-1"
+        aria-labelledby="drawer-navigation-label"
+      >
+        <div class="border-b border-default pb-4 flex items-center">
+          <a href="#" class="flex items-center space-x-2 rtl:space-x-reverse">
+            <img
+              src="/static/img/avatar-mujer.jpg"
+              class="h-6 w-6 box-border rounded-full"
+              alt="Flowbite Logo"
+            />
+            <span
+              class="self-center text-lg font-semibold whitespace-nowrap text-heading"
+              >Usuario</span
+            >
+          </a>
+          <button
+            type="button"
+            data-drawer-hide="drawer-navigation"
+            aria-controls="drawer-navigation"
+            class="text-body bg-transparent hover:text-heading hover:bg-neutral-tertiary rounded-base w-9 h-9 absolute top-2.5 end-2.5 flex items-center justify-center"
+          >
+            <img src="/static/icons/clous.svg" alt="" />
+            <span class="sr-only">Close menu</span>
+          </button>
+        </div>
+        <div class="py-5 pb-2 overflow-y-auto">
+          <ul class="space-y-2 font-medium">
+            <li>
+              <a
+                href="#"
+                class="flex items-center px-2 py-1 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group"
+              >
+                <img src="/static/icons/home.svg" alt="" />
+                <span class="ms-3">Dashboard</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div class="py-2 pb-2 overflow-y-auto">
+          <ul class="space-y-2 font-medium">
+            <li>
+              <a
+                href="#"
+                class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group"
+              >
+                <img src="/static/icons/home.svg" alt="" />
+                <span class="ms-3">Dashboard</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div class="py-2 pb-2 overflow-y-auto">
+          <ul class="space-y-2 font-medium">
+            <li>
+              <a
+                href="#"
+                class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group"
+              >
+                <img src="/static/icons/home.svg" alt="" />
+                <span class="ms-3">Dashboard</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <main></main>
+  </body>
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js"></script>
+</html>
