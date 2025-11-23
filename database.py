@@ -1,6 +1,7 @@
-from sqlite3 import connect
+import sqlite3
 
 
-def conn():
-    conn = connect("database.db")
+def conection():
+    conn = sqlite3.connect("database.db", timeout=10)
+    conn.row_factory = sqlite3.Row
     return conn

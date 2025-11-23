@@ -1,4 +1,6 @@
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template
+from database import conection
+from datetime import datetime
 
 
 app = Flask(__name__)
@@ -6,22 +8,19 @@ app = Flask(__name__)
 
 @app.route("/")
 @app.route("/dashboard")
-def home():
-    return render_template("dashboard.html")
+def dashboard():
+    conn = conection()
+    cursor = conn.cursor()
 
+    cursor.execute("SELECT strftime('%Y-%m', fecha), SUM(monto) FROM pagos GROUP BY strftime('%Y-%m', fecha)")
+    data = cursor.fetchall()
+    conn.close()
 
+    meses = [row[0] for row in data]
+    ganancias = [row[1] for row in data]
 
-def init_db():
-    import os
-    import sqlite3
-    
-    if not os.path.exists("database.db"):
-        conn = sqlite3.connect("database.db")
-        with open("script.sql", "r") as f:
-            conn.executescript(f.read())
-        conn.close()
-        print("Base de datos inicializada.")
+    return render_template("dashboard.html", meses=meses, ganancias=ganancias)
+
 
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True)

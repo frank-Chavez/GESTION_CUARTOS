@@ -8,6 +8,7 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/output.css') }}"
     />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
 
   <body class="bg-[#ffffff]">
@@ -95,7 +96,69 @@
         </div>
       </div>
     </header>
-    <main></main>
+    <main>
+      <h1>Dashboard</h1>
+      <p>Resumen general de tu sistema de alquileres</p>
+      <div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+      <div class="flex flex-col items-center">
+        <div class="m-3 p-1 bg-[#f4f4f4] rounded-lg h-auto w-100">
+          <canvas
+            id="gananciasChart"
+            width="600"
+            height="400"
+            class=""
+          ></canvas>
+        </div>
+        <div>
+          <h2 class="text-xl">Inquilinos registrados</h2>
+        </div>
+      </div>
+    </main>
+    <script id="chart-data" type="application/json">
+      {{ {'meses': meses, 'ganancias': ganancias} | tojson }}
+    </script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const chartDataEl = document.getElementById('chart-data');
+        const serverData = chartDataEl
+          ? JSON.parse(chartDataEl.textContent)
+          : { meses: [], ganancias: [] };
+
+        const meses = serverData.meses;
+        const ganancias = serverData.ganancias;
+
+        const canvas = document.getElementById('gananciasChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: meses,
+            datasets: [
+              {
+                label: 'Ganancias',
+                data: ganancias,
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            scales: {
+              y: { beginAtZero: true },
+            },
+          },
+        });
+      });
+    </script>
   </body>
   <script src="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js"></script>
 </html>
