@@ -12,10 +12,11 @@ CREATE TABLE inquilinos (
     nombre TEXT NOT NULL,
     dni TEXT NOT NULL UNIQUE,
     telefono TEXT,
-    cuarto TEXT NOT NULL,
+    id_cuarto INTEGER,
     monto_mensual REAL NOT NULL,
     dia_pago INTEGER NOT NULL,
-    notas TEXT
+    notas TEXT,
+    FOREIGN KEY (id_cuarto) REFERENCES cuartos(id)
 );
 CREATE TABLE pagos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,4 +26,10 @@ CREATE TABLE pagos (
     observacion TEXT,
     puntual BOOLEAN NOT NULL,
     FOREIGN KEY (id_inquilino) REFERENCES inquilinos(id)
+);
+CREATE TABLE cuartos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    numero TEXT NOT NULL UNIQUE,
+    descripcion TEXT,
+    estado TEXT NOT NULL CHECK(estado IN ('ocupado', 'libre'))
 );

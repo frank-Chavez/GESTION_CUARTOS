@@ -8,67 +8,74 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/output.css') }}"
     />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
 
-  <body class="bg-[#ffffff]">
-    <header class="bg-slate-500 p-2">
+  <body class="bg-[#f4f4f4]">
+    <header class="bg-[#ffffff]">
       <!-- drawer init and show -->
-      <div class="text-start">
+      <div class="text-start border-b border-gray-200 shadow-sm">
         <button
-          class="p-1 m-3 bg-white rounded-md"
+          class="p-1 m-3 rounded-md"
           type="button"
           data-drawer-target="drawer-navigation"
           data-drawer-show="drawer-navigation"
           aria-controls="drawer-navigation"
         >
-          <img src="/static/icons/menu.svg" alt="" />
+          <img src="/static/icons/menu2.svg" alt="" />
         </button>
       </div>
 
       <!-- drawer component -->
       <div
         id="drawer-navigation"
-        class="fixed top-0 left-0 z-40 h-screen p-4 overflow-y-auto transition-transform -translate-x-full bg-neutral-primary-soft w-80 border-e border-default bg-white"
+        class="fixed top-0 left-0 z-40 h-screen p-4 overflow-y-auto transition-transform -translate-x-full bg-neutral-primary-soft w-64 sm:w-80 bg-[#261d17]"
         tabindex="-1"
         aria-labelledby="drawer-navigation-label"
       >
-        <div class="border-b border-default pb-4 flex items-center">
+        <div class="border-default pb-4 flex items-center">
           <a href="#" class="flex items-center space-x-2 rtl:space-x-reverse">
             <img
               src="/static/img/avatar-mujer.jpg"
-              class="h-6 w-6 box-border rounded-full"
-              alt="Flowbite Logo"
+              class="h-8 w-8 box-border rounded-full"
+              alt="Avatar usuario"
             />
             <span
-              class="self-center text-lg font-semibold whitespace-nowrap text-heading"
+              class="self-center text-lg font-semibold whitespace-nowrap text-heading text-[#ffffff]"
               >Usuario</span
             >
           </a>
+
           <button
             type="button"
             data-drawer-hide="drawer-navigation"
             aria-controls="drawer-navigation"
-            class="text-body bg-transparent hover:text-heading hover:bg-neutral-tertiary rounded-base w-9 h-9 absolute top-2.5 end-2.5 flex items-center justify-center"
+            class="text-body bg-transparent hover:text-heading hover:bg-neutral-tertiary rounded-base w-9 h-9 absolute top-2.5 right-2.5 flex items-center justify-center"
+            aria-label="Cerrar menú"
           >
-            <img src="/static/icons/clous.svg" alt="" />
-            <span class="sr-only">Close menu</span>
+            <img src="/static/icons/clous.svg" alt="Cerrar" />
           </button>
         </div>
-        <div class="py-5 pb-2 overflow-y-auto">
+        <p class="text-[#ffffff] py-6 pb-2">Navegacion</p>
+        <div class="py-3 pb-3 overflow-y-auto">
           <ul class="space-y-2 font-medium">
             <li>
               <a
-                href="#"
+                href=""
                 class="flex items-center px-2 py-1 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group"
               >
                 <img src="/static/icons/home.svg" alt="" />
-                <span class="ms-3">Dashboard</span>
+                <span class="ml-3 text-[#ffffff]">Dashboard</span>
               </a>
             </li>
           </ul>
         </div>
-        <div class="py-2 pb-2 overflow-y-auto">
+        <div class="py-3 pb-3 overflow-y-auto">
           <ul class="space-y-2 font-medium">
             <li>
               <a
@@ -76,12 +83,12 @@
                 class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group"
               >
                 <img src="/static/icons/home.svg" alt="" />
-                <span class="ms-3">Dashboard</span>
+                <span class="ml-3 text-[#ffffff]">Dashboard</span>
               </a>
             </li>
           </ul>
         </div>
-        <div class="py-2 pb-2 overflow-y-auto">
+        <div class="py-3 pb-3 overflow-y-auto">
           <ul class="space-y-2 font-medium">
             <li>
               <a
@@ -89,38 +96,226 @@
                 class="flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group"
               >
                 <img src="/static/icons/home.svg" alt="" />
-                <span class="ms-3">Dashboard</span>
+                <span class="ml-3 text-[#ffffff]">Dashboard</span>
               </a>
             </li>
           </ul>
         </div>
       </div>
+      <div
+        id="drawer-overlay"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+      ></div>
     </header>
     <main>
-      <h1>Dashboard</h1>
-      <p>Resumen general de tu sistema de alquileres</p>
-      <div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
+      <div class="flex flex-col p-4 sm:px-8 w-full">
+        <h2 class="sm:text-[35px] text-[25px] font-poppins font-[900]">
+          Dashboard
+        </h2>
+        <p class="text-[#654640] sm:text-[16px] text-[12px] font-poppins">
+          Resumen general del sistema de alquileres
+        </p>
       </div>
-      <div class="flex flex-col items-center">
-        <div class="m-3 p-1 bg-[#f4f4f4] rounded-lg h-auto w-100">
-          <canvas
-            id="gananciasChart"
-            width="600"
-            height="400"
-            class=""
-          ></canvas>
+      <div class="flex flex-wrap p-4 sm:px-8 w-full gap-4">
+        <!-- Card 1 -->
+        <div
+          class="bg-white flex-1 min-w-[200px] p-6 rounded-lg shadow-sm flex justify-between items-center"
+        >
+          <div>
+            <p class="text-sm text-gray-500 font-poppins">Cuartos Ocupados</p>
+            <p class="text-3xl font-bold font-display text-gray-900 py-2">
+              12/15
+            </p>
+          </div>
+          <div
+            class="bg-[#fdf5ef] p-2 rounded-lg flex items-center justify-center"
+          >
+            <img
+              src="/static/icons/cuartos.svg"
+              alt="icono cuartos"
+              class="w-7 h-7"
+            />
+          </div>
         </div>
-        <div>
-          <h2 class="text-xl">Inquilinos registrados</h2>
+
+        <!-- Card 2 -->
+        <div
+          class="bg-white flex-1 min-w-[200px] p-6 rounded-lg shadow-sm flex justify-between items-center"
+        >
+          <div>
+            <p class="text-sm text-gray-500 font-poppins">Ganancias del Mes</p>
+            <p class="text-3xl font-bold font-display text-gray-900 py-2">
+              S/.6,500
+            </p>
+          </div>
+          <div
+            class="bg-[#fdf5ef] p-2 rounded-lg flex items-center justify-center"
+          >
+            <img
+              src="/static/icons/moneda.svg"
+              alt="icono dolar"
+              class="w-7 h-7"
+            />
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div
+          class="bg-white flex-1 min-w-[200px] p-6 rounded-lg shadow-sm flex justify-between items-center"
+        >
+          <div>
+            <p class="text-sm text-gray-500 font-poppins">Inquilinos Activos</p>
+            <p class="text-3xl font-bold font-display text-gray-900 py-2">12</p>
+          </div>
+          <div
+            class="bg-[#fdf5ef] p-2 rounded-lg flex items-center justify-center"
+          >
+            <img
+              src="/static/icons/user.svg"
+              alt="icono usuarios"
+              class="w-7 h-7"
+            />
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div
+          class="bg-white flex-1 min-w-[200px] p-6 rounded-lg shadow-sm flex justify-between items-center"
+        >
+          <div>
+            <p class="text-sm text-gray-500 font-poppins">Pagos Pendientes</p>
+            <p class="text-3xl font-bold font-display text-gray-900 py-2">2</p>
+          </div>
+          <div
+            class="bg-[#fdf5ef] p-2 rounded-lg flex items-center justify-center"
+          >
+            <img
+              src="/static/icons/reloj.svg"
+              alt="icono reloj"
+              class="w-7 h-7"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="flex flex-col sm:flex-row sm:justify-between p-4 sm:px-8 w-full gap-4"
+      >
+        <div class="p-6 sm:p-10 bg-[#ffffff] rounded-lg w-full sm:w-2/4">
+          <div>
+            <h3 class="text-xl font-poppins font-bold mb-9">
+              Ganancias Mensuales
+            </h3>
+          </div>
+          <div class="relative w-full h-64 sm:h-96">
+            <canvas id="gananciasChart" class="w-full h-full block"></canvas>
+          </div>
+        </div>
+        <div class="p-6 sm:p-10 bg-[#ffffff] rounded-lg w-full sm:w-2/4">
+          <h3 class="text-xl font-poppins font-bold mb-9">Pagos Recientes</h3>
+          {% for i in inquilinos %} {% if i['puntual'] == 1 %}
+          <div
+            class="flex justify-between p-4 border rounded-lg gap-5 mb-4 items-center"
+          >
+            <div class="flex items-center gap-4 min-w-0">
+              <img
+                src="/static/icons/chec.svg"
+                class="bg-[#e7f5ec] p-2 rounded-lg"
+              />
+              <div>
+                <p class="text-[17px] font-poppins font-semibold truncate">
+                  {{ i['nombre'] }}
+                </p>
+                <div class="flex flex-col sm:flex-row gap-1 sm:gap-2">
+                  <p
+                    class="text-[15px] font-poppins font-semibold text-[#ee7c2b]"
+                  >
+                    Cuarto {{ i['cuarto']}}
+                  </p>
+                  <p class="text-[15px] font-poppins">
+                    {{i['fecha']|replace('-', '/')}}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <p class="text-[15px] font-poppins font-bold">
+              S/. {{ i['monto_mensual']}}
+            </p>
+          </div>
+          {%else%}
+          <div
+            class="flex justify-between p-4 border rounded-lg gap-5 mb-4 items-center"
+          >
+            <div class="flex items-center gap-4 min-w-0">
+              <img
+                src="/static/icons/reloj.svg"
+                class="bg-[#fff6e4] p-2 rounded-lg"
+              />
+              <div>
+                <p class="text-[17px] font-poppins font-semibold truncate">
+                  {{ i['nombre'] }}
+                </p>
+                <div class="flex flex-col sm:flex-row gap-1 sm:gap-2">
+                  <p
+                    class="text-[15px] font-poppins font-semibold text-[#ee7c2b]"
+                  >
+                    Cuarto {{ i['cuarto']}}
+                  </p>
+                  <p class="text-[15px] font-poppins">
+                    {{i['fecha']|replace('-', '/')}}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <p class="text-xl font-poppins font-bold">
+              S/. {{ i['monto_mensual']}}
+            </p>
+          </div>
+          {% endif %} {% endfor %}
         </div>
       </div>
     </main>
     <script id="chart-data" type="application/json">
       {{ {'meses': meses, 'ganancias': ganancias} | tojson }}
+    </script>
+
+    <script>
+      // Script para controlar el overlay en móvil cuando se abre/cierra el drawer
+      (function () {
+        const overlay = document.getElementById('drawer-overlay');
+        const drawer = document.getElementById('drawer-navigation');
+
+        if (!overlay || !drawer) return;
+
+        // Mostrar overlay cuando se hace click en cualquier botón que abra el drawer
+        document.querySelectorAll('[data-drawer-show]').forEach((btn) => {
+          btn.addEventListener('click', function () {
+            overlay.classList.remove('hidden');
+            // Abrir drawer (quitar clase que lo oculta)
+            drawer.classList.remove('-translate-x-full');
+          });
+        });
+
+        // Ocultar overlay cuando se hace click en cualquier botón que cierre el drawer
+        document.querySelectorAll('[data-drawer-hide]').forEach((btn) => {
+          btn.addEventListener('click', function () {
+            overlay.classList.add('hidden');
+            drawer.classList.add('-translate-x-full');
+          });
+        });
+
+        // Cerrar drawer al hacer click en el overlay
+        overlay.addEventListener('click', function () {
+          drawer.classList.add('-translate-x-full');
+          overlay.classList.add('hidden');
+        });
+
+        // Al redimensionar, cerrar overlay y drawer por defecto
+        window.addEventListener('resize', function () {
+          overlay.classList.add('hidden');
+          drawer.classList.add('-translate-x-full');
+        });
+      })();
     </script>
 
     <script>
@@ -133,32 +328,116 @@
         const meses = serverData.meses;
         const ganancias = serverData.ganancias;
 
+        // Nombres de meses en español
+        const MONTH_NAMES = [
+          'Enero',
+          'Febrero',
+          'Marzo',
+          'Abril',
+          'Mayo',
+          'Junio',
+          'Julio',
+          'Agosto',
+          'Septiembre',
+          'Octubre',
+          'Noviembre',
+          'Diciembre',
+        ];
+
+        // Convierte una etiqueta de mes (p. ej. '2025-11' o '11' o '2025-11-01') a nombre de mes
+        function monthLabelToName(label) {
+          if (!label && label !== 0) return '';
+          const str = String(label);
+          // buscar patrón YYYY-MM o YYYY-M
+          const dashMatch =
+            str.match(/-(\d{1,2})(?:-|$)/) || str.match(/^(\d{4})-(\d{1,2})$/);
+          if (dashMatch) {
+            // toma el último grupo de dígitos de mes
+            const monthNum = parseInt(dashMatch[dashMatch.length - 1], 10);
+            if (!isNaN(monthNum) && monthNum >= 1 && monthNum <= 12)
+              return MONTH_NAMES[monthNum - 1];
+          }
+          // si la etiqueta es solo número de mes (1-12)
+          const num = parseInt(str, 10);
+          if (!isNaN(num) && num >= 1 && num <= 12) return MONTH_NAMES[num - 1];
+          // si ya es texto (p. ej. 'Nov') intentar mapear por inicio
+          const lower = str.toLowerCase();
+          for (let i = 0; i < MONTH_NAMES.length; i++) {
+            if (
+              MONTH_NAMES[i].toLowerCase().startsWith(lower) ||
+              lower.startsWith(MONTH_NAMES[i].toLowerCase().slice(0, 3))
+            )
+              return MONTH_NAMES[i];
+          }
+          // fallback: devolver la etiqueta tal cual
+          return str;
+        }
+
+        // Etiquetas que se mostrarán en el eje: convertimos las etiquetas del servidor a nombres
+        const displayLabels = meses.map((m) => monthLabelToName(m));
+
         const canvas = document.getElementById('gananciasChart');
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
 
-        new Chart(ctx, {
+        const gananciasChart = new Chart(ctx, {
           type: 'bar',
           data: {
-            labels: meses,
+            labels: displayLabels,
             datasets: [
               {
-                label: 'Ganancias',
+                label: 'Total de ganancias por mes',
                 data: ganancias,
-                backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: '#ee7c2b',
                 borderWidth: 1,
+                borderRadius: 15,
               },
             ],
           },
           options: {
+            responsive: true,
+            maintainAspectRatio: false,
             scales: {
               y: { beginAtZero: true },
             },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  // Mostrar solo el nombre del mes en el tooltip (sin año)
+                  title: function (tooltipItems) {
+                    if (!tooltipItems || !tooltipItems.length) return '';
+                    return tooltipItems[0].label || '';
+                  },
+                  // Label del valor (ej. "Total: 123")
+                  label: function (context) {
+                    const value = context.formattedValue || context.raw || 0;
+                    return 'Total: ' + value;
+                  },
+                },
+              },
+            },
           },
+        });
+
+        // Mostrar nombre del mes al hacer clic en una barra
+        const selectedEl = document.getElementById('selected-month');
+        canvas.addEventListener('click', function (evt) {
+          const points = gananciasChart.getElementsAtEventForMode(
+            evt,
+            'nearest',
+            { intersect: true },
+            true
+          );
+          if (points.length) {
+            const firstPoint = points[0];
+            const label = gananciasChart.data.labels[firstPoint.index];
+            if (selectedEl)
+              selectedEl.textContent = 'Mes seleccionado: ' + label;
+          }
         });
       });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js"></script>
   </body>
-  <script src="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js"></script>
 </html>
