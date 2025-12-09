@@ -393,6 +393,16 @@
                   <span class="switch-slider"></span>
                 </label>
               </div>
+              <div class="flex items-center justify-between py-5">
+                <div>
+                  <span class="font-semibold text-[18px]">Notificaciones Push</span><br />
+                  <span class="text-[15px] text-[#bfae9f]">Recibe notificaciones en tu dispositivo (push)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="push-subscribe-btn" class="px-3 py-2 bg-green-600 text-white rounded">Activar Push</button>
+                  <button id="push-send-test-btn" class="px-3 py-2 bg-orange-600 text-white rounded">Enviar prueba</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -416,6 +426,70 @@
         }
         btn.disabled = true;
         btn.textContent = 'Guardando...';
+      });
+    }
+  })();
+
+  // Push subscription helper
+  (function(){
+    const pushBtn = document.getElementById('push-subscribe-btn');
+    const pushTestBtn = document.getElementById('push-send-test-btn');
+    const csrfToken = '{{ csrf_token() }}';
+    const vapidPublicKey = '{{ vapid_public_key or "" }}';
+
+    function urlBase64ToUint8Array(base64String) {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+      return outputArray;
+    }
+
+    async function postJson(url, body){
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify(body || {})
+      });
+      return res;
+    }
+
+    if (pushBtn) {
+      pushBtn.addEventListener('click', async function(){
+        if (!('serviceWorker' in navigator)) return alert('Service Worker no soportado en este navegador');
+        if (!vapidPublicKey) return alert('Clave VAPID no configurada en el servidor');
+        try{
+          const reg = await navigator.serviceWorker.ready;
+          const sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+          });
+          // enviar suscripción al servidor
+          const r = await postJson('{{ url_for("config.push_subscribe") }}', sub.toJSON());
+          if (!r.ok) {
+            const j = await r.json().catch(()=>({message:'Error'}));
+            alert('No se pudo guardar la suscripción: ' + (j.message || r.statusText));
+          } else {
+            alert('Suscripción guardada correctamente');
+          }
+        }catch(e){ console.error(e); alert('Error al suscribir: ' + e.message) }
+      });
+    }
+
+    if (pushTestBtn) {
+      pushTestBtn.addEventListener('click', async function(){
+        try{
+          const r = await postJson('{{ url_for("config.push_send_test") }}', {});
+          const j = await r.json().catch(()=>({}));
+          if (!r.ok) alert('Error al enviar prueba: ' + (j.message || r.statusText));
+          else alert('Notificación de prueba enviada (revisa tu dispositivo)');
+        }catch(e){ console.error(e); alert('Error al solicitar envío de prueba: ' + e.message) }
       });
     }
   })();
