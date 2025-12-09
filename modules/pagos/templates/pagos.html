@@ -1,0 +1,555 @@
+{% extends "base.html" %} {% block title %}Pagos - Sistema{% endblock %} {%
+block content %}
+<div
+  class="flex flex-col sm:flex-row gap-4 p-4 sm:px-8 w-full items-start justify-between"
+>
+  <div class="flex flex-col w-full">
+    <h2
+      class="sm:text-[35px] text-[22px] font-poppins font-[900] text-gray-900 dark:text-white"
+    >
+      Gestión de Pagos
+    </h2>
+    <p
+      class="text-[#654640] dark:text-dark-muted sm:text-[16px] text-[12px] font-poppins"
+    >
+      Registra y controla los pagos de tus inquilinos
+    </p>
+  </div>
+  <div class="flex gap-3 sm:ml-auto">
+    <!-- Botón Registrar Pago -->
+    <button
+      data-modal-target="agregar-pago-modal"
+      data-modal-toggle="agregar-pago-modal"
+      class="inline-flex items-center w-full sm:w-auto px-6 sm:px-4 py-2 bg-[#ef893f] hover:bg-[#ff9951] text-white gap-2 font-poppins text-[15px] rounded-lg whitespace-nowrap"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-5 h-5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 4v16m8-8H4"
+        />
+      </svg>
+      Registrar pago
+    </button>
+  </div>
+</div>
+
+<!-- Tarjetas de estadísticas -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 sm:px-8">
+  <!-- Total Cobrado -->
+  <div
+    class="bg-white dark:bg-dark-card rounded-lg border border-gray-200 dark:border-dark-border p-4"
+  >
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Total Cobrado</p>
+    <p class="text-3xl font-bold text-green-500">
+      S/{{ "%.0f"|format(stats.total_cobrado) }}
+    </p>
+  </div>
+  <!-- Pendiente -->
+  <div
+    class="bg-white dark:bg-dark-card rounded-lg border border-gray-200 dark:border-dark-border p-4"
+  >
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Pendiente</p>
+    <p class="text-3xl font-bold text-[#ef893f]">
+      S/{{ "%.2f"|format(stats.pendiente) }}
+    </p>
+  </div>
+  <!-- Atrasado -->
+  <div
+    class="bg-white dark:bg-dark-card rounded-lg border border-gray-200 dark:border-dark-border p-4"
+  >
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Atrasado</p>
+    <p class="text-3xl font-bold text-red-500">
+      S/{{ "%.0f"|format(stats.atrasado) }}
+    </p>
+  </div>
+</div>
+
+<!-- Filtros y búsqueda -->
+<div class="p-4 sm:px-8">
+  <div
+    class="bg-white dark:bg-dark-card rounded-lg shadow-sm dark:shadow-dark-border/20 p-4 sm:p-6 transition-colors flex flex-col gap-4"
+  >
+    <!-- Buscador -->
+    <div class="flex items-center relative w-full">
+      <img
+        src="/static/icons/search.svg"
+        alt=""
+        class="w-5 h-5 dark:invert dark:opacity-80 absolute left-3 top-1/2 -translate-y-1/2"
+      />
+      <input
+        type="search"
+        id="searchInput"
+        placeholder="Buscar por inquilino o cuarto..."
+        class="pl-10 sm:pl-12 pr-4 py-2 text-sm sm:text-base rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-[#201813] w-full text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+      />
+    </div>
+
+    <!-- Filtros por estado -->
+    <div class="flex flex-wrap gap-2">
+      <button
+        type="button"
+        data-filter="todos"
+        class="filter-btn px-4 py-2 text-sm font-medium rounded-lg bg-[#ef893f] text-white"
+      >
+        Todos
+      </button>
+      <button
+        type="button"
+        data-filter="pagado"
+        class="filter-btn px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-[#3d2a1f] text-gray-700 dark:text-gray-300"
+      >
+        Pagados
+      </button>
+      <button
+        type="button"
+        data-filter="pendiente"
+        class="filter-btn px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-[#3d2a1f] text-gray-700 dark:text-gray-300"
+      >
+        Pendientes
+      </button>
+      <button
+        type="button"
+        data-filter="atrasado"
+        class="filter-btn px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-[#3d2a1f] text-gray-700 dark:text-gray-300"
+      >
+        Atrasados
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Lista de Pagos -->
+<div class="p-4 sm:px-8">
+  <div
+    class="bg-white dark:bg-dark-card rounded-lg shadow-sm dark:shadow-dark-border/20 p-4 sm:p-6 transition-colors"
+  >
+    <!-- Encabezado de la lista -->
+    <div class="flex items-center gap-2 mb-6 justify-center">
+      <h3
+        id="tablaTitulo"
+        class="text-xl font-bold text-gray-900 dark:text-white text-left w-full"
+      >
+        Historial de Pagos
+      </h3>
+    </div>
+
+    <!-- Tabla de pagos -->
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-gray-200 dark:border-dark-border">
+            <th
+              class="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400"
+            >
+              Inquilino
+            </th>
+            <th
+              class="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400"
+            >
+              Cuarto
+            </th>
+            <th
+              class="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400"
+            >
+              Monto Mensual
+            </th>
+            <th
+              class="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400"
+            >
+              Monto Pagado
+            </th>
+            <th
+              class="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400"
+            >
+              Monto Faltante
+            </th>
+            <th
+              class="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400"
+            >
+              Fecha de Ingreso
+            </th>
+            <th
+              class="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400"
+            >
+              Fecha Vencimiento
+            </th>
+            <th
+              class="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400"
+            >
+              Estado
+            </th>
+          </tr>
+        </thead>
+        <tbody id="pagosTableBody">
+          {% for pago in pagos %}
+          <tr
+            class="pago-row border-b border-gray-100 dark:border-dark-border/50 hover:bg-gray-50 dark:hover:bg-[#201813] transition-colors"
+            data-inquilino="{{ pago[1] }} {{ pago[2] }}"
+            data-cuarto="{{ pago[3] }}"
+            data-estado="{{ pago[9]|lower }}"
+          >
+            <td class="py-4 px-4">
+              <span class="text-gray-900 dark:text-white font-medium"
+                >{{ pago[1] }} {{ pago[2] }}</span
+              >
+            </td>
+            <td class="py-4 px-4 text-[#ef893f] font-medium">{{ pago[3] }}</td>
+            <td
+              class="py-4 px-4 text-gray-700 dark:text-gray-300 font-semibold"
+            >
+              S/.{{ "%.2f"|format(pago[4]) }}
+            </td>
+            <td
+              class="py-4 px-4 text-green-600 dark:text-green-400 font-semibold"
+            >
+              S/.{{ "%.2f"|format(pago[7]) }}
+            </td>
+            <td class="py-4 px-4 text-red-500 dark:text-red-400 font-semibold">
+              S/.{{ "%.2f"|format(pago[8]) }}
+            </td>
+            <td class="py-4 px-4 text-gray-700 dark:text-gray-300">
+              {{ pago[6] }}
+            </td>
+            <td class="py-4 px-4 text-gray-700 dark:text-gray-300">
+              {{ pago[10] }}
+            </td>
+            <td class="py-4 px-4">
+              {% if pago[9] == 'Pagado' %}
+              <span
+                class="px-3 py-1 rounded-full text-xs font-medium bg-green-500 text-white"
+                >Pagado</span
+              >
+              {% elif pago[9] == 'Atrasado' %}
+              <span
+                class="px-3 py-1 rounded-full text-xs font-medium bg-red-500 text-white"
+                >Atrasado</span
+              >
+              {% else %}
+              <span
+                class="px-3 py-1 rounded-full text-xs font-medium bg-[#ef893f] text-white"
+                >Pendiente</span
+              >
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="py-12">
+              <div
+                id="noPagosMsg"
+                class="flex flex-col items-center justify-center text-center w-full"
+              >
+                <svg
+                  id="noPagosIcon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-16 h-16 text-gray-400 dark:text-gray-600 mb-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+                <p
+                  id="noPagosTexto"
+                  class="text-gray-500 dark:text-gray-400 text-base"
+                >
+                  No hay pagos registrados
+                </p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Agregar Pago -->
+<div
+  id="agregar-pago-modal"
+  tabindex="-1"
+  aria-hidden="true"
+  class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full bg-black/50"
+>
+  <div class="relative p-4 w-full max-w-lg max-h-full">
+    <div class="relative bg-white rounded-2xl shadow-xl dark:bg-[#2a1f1a]">
+      <!-- Header -->
+      <div class="flex items-start justify-between p-6 pb-0">
+        <div>
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
+            Registrar Nuevo Pago
+          </h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Ingresa los detalles del pago recibido.
+          </p>
+        </div>
+        <button
+          type="button"
+          class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center dark:hover:bg-gray-700 dark:hover:text-white"
+          data-modal-hide="agregar-pago-modal"
+        >
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14">
+            <path
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+            />
+          </svg>
+          <span class="sr-only">Cerrar</span>
+        </button>
+      </div>
+
+      <!-- Formulario -->
+      <div class="p-6">
+        <form
+          class="space-y-5"
+          action="{{ url_for('pagos.agregar') }}"
+          method="POST"
+        >
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+          <!-- Inquilino -->
+          <div>
+            <label
+              for="id_inquilino"
+              class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+            >
+              Inquilino
+            </label>
+            <select
+              name="id_inquilino"
+              id="id_inquilino"
+              class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#ef893f] focus:border-[#ef893f] block w-full p-3 dark:bg-[#3d2a1f] dark:border-[#3d2a1f] dark:text-white"
+              required
+            >
+              <option value="">Seleccionar inquilino</option>
+              {% for inquilino in inquilinos %}
+              <option value="{{ inquilino[0] }}">{{ inquilino[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Monto -->
+          <div>
+            <label
+              for="monto"
+              class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+            >
+              Monto
+            </label>
+            <input
+              type="number"
+              name="monto"
+              id="monto"
+              min="0.01"
+              step="0.01"
+              placeholder="S/450"
+              class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#ef893f] focus:border-[#ef893f] block w-full p-3 dark:bg-[#3d2a1f] dark:border-[#3d2a1f] dark:placeholder-gray-500 dark:text-white"
+              required
+            />
+          </div>
+
+          <!-- Método de Pago -->
+          <div>
+            <label
+              for="metodo_pago"
+              class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+            >
+              Método de Pago
+            </label>
+            <select
+              name="metodo_pago"
+              id="metodo_pago"
+              class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#ef893f] focus:border-[#ef893f] block w-full p-3 dark:bg-[#3d2a1f] dark:border-[#3d2a1f] dark:text-white"
+              required
+            >
+              <option value="">Seleccionar método</option>
+              <option value="efectivo">Efectivo</option>
+              <option value="transferencia">Transferencia</option>
+              <option value="yape">Yape</option>
+              <option value="plin">Plin</option>
+              <option value="deposito">Depósito</option>
+            </select>
+          </div>
+
+          <!-- Fecha de Pago -->
+          <div>
+            <label
+              for="fecha"
+              class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+            >
+              Fecha de Pago
+            </label>
+            <input
+              type="date"
+              name="fecha"
+              id="fecha"
+              class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#ef893f] focus:border-[#ef893f] block w-full p-3 dark:bg-[#3d2a1f] dark:border-[#3d2a1f] dark:text-white"
+              required
+            />
+          </div>
+
+          <!-- Botones -->
+          <div class="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              data-modal-hide="agregar-pago-modal"
+              class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors dark:bg-[#3d2a1f] dark:text-gray-300 dark:hover:bg-[#4d3a2f]"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="px-6 py-2.5 text-sm font-medium text-white bg-[#ef893f] hover:bg-[#ff9951] rounded-lg transition-colors"
+            >
+              Registrar Pago
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirmar Eliminación -->
+<div
+  id="eliminar-pago-modal"
+  tabindex="-1"
+  aria-hidden="true"
+  class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full"
+>
+  <div class="relative p-4 w-full max-w-md max-h-full">
+    <div class="relative bg-white rounded-lg shadow dark:bg-dark-card">
+      <div class="p-4 md:p-5 text-center">
+        <svg
+          class="mx-auto mb-4 text-red-500 w-12 h-12"
+          aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 20 20"
+        >
+          <path
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+          />
+        </svg>
+        <h3
+          class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400"
+          id="eliminar-pago-mensaje"
+        >
+          ¿Estás seguro de eliminar este pago?
+        </h3>
+        <form id="eliminarPagoForm" method="POST" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button
+            type="submit"
+            class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center me-2"
+          >
+            Sí, eliminar
+          </button>
+          <button
+            type="button"
+            data-modal-hide="eliminar-pago-modal"
+            class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
+          >
+            Cancelar
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %} {% block scripts %}
+<script>
+  // Cambiar título y mensaje según filtro
+  function actualizarTituloYMensaje() {
+    const tablaTitulo = document.getElementById('tablaTitulo');
+    const noPagosTexto = document.getElementById('noPagosTexto');
+    const noPagosIcon = document.getElementById('noPagosIcon');
+    if (currentFilter === 'todos') {
+      tablaTitulo.textContent = 'Historial de Pagos';
+      noPagosTexto.textContent = 'No hay pagos registrados';
+      noPagosIcon.style.display = '';
+    } else if (currentFilter === 'pagado') {
+      tablaTitulo.textContent = 'Pagos Completados';
+      noPagosTexto.textContent = 'No hay pagos completados';
+      noPagosIcon.style.display = '';
+    } else if (currentFilter === 'pendiente') {
+      tablaTitulo.textContent = 'Pagos Pendientes';
+      noPagosTexto.textContent = 'No hay pagos pendientes';
+      noPagosIcon.style.display = '';
+    } else if (currentFilter === 'atrasado') {
+      tablaTitulo.textContent = 'Pagos Atrasados';
+      noPagosTexto.textContent = 'No hay pagos atrasados';
+      noPagosIcon.style.display = '';
+    }
+  }
+  // Filtro y búsqueda combinados
+  const searchInput = document.getElementById('searchInput');
+  const filterButtons = document.querySelectorAll('.filter-btn');
+  const pagosTableBody = document.getElementById('pagosTableBody');
+  let currentFilter = 'todos';
+
+  function filtrarPagos() {
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    pagosTableBody.querySelectorAll('.pago-row').forEach((row) => {
+      const inquilino = row.dataset.inquilino.toLowerCase();
+      const cuarto = row.dataset.cuarto.toLowerCase();
+      const estado = row.dataset.estado.toLowerCase();
+      const matchesSearch =
+        inquilino.includes(searchTerm) || cuarto.includes(searchTerm);
+      const matchesFilter =
+        currentFilter === 'todos' || estado === currentFilter;
+      row.style.display = matchesSearch && matchesFilter ? '' : 'none';
+    });
+  }
+
+  searchInput.addEventListener('input', filtrarPagos);
+  filterButtons.forEach((btn) => {
+    btn.addEventListener('click', function () {
+      filterButtons.forEach((b) => {
+        b.classList.remove('bg-[#ef893f]', 'text-white');
+        b.classList.add(
+          'bg-gray-200',
+          'dark:bg-[#3d2a1f]',
+          'text-gray-700',
+          'dark:text-gray-300'
+        );
+      });
+      this.classList.remove(
+        'bg-gray-200',
+        'dark:bg-[#3d2a1f]',
+        'text-gray-700',
+        'dark:text-gray-300'
+      );
+      this.classList.add('bg-[#ef893f]', 'text-white');
+      currentFilter = this.dataset.filter;
+      filtrarPagos();
+      actualizarTituloYMensaje();
+    });
+  });
+
+  filtrarPagos();
+  actualizarTituloYMensaje();
+</script>
+{% endblock %}

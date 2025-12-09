@@ -1,0 +1,1309 @@
+{% extends "base.html" %} {% block title %}Inquilinos - Sistema{% endblock %} {%
+block content %}
+<div
+  class="flex p-4 sm:px-8 w-full justify-between items-center flex-wrap gap-4"
+>
+  <div class="flex flex-col">
+    <h2
+      class="sm:text-[35px] text-[22px] font-poppins font-[900] text-gray-900 dark:text-white"
+    >
+      Gestión de Inquilinos
+    </h2>
+    <p
+      class="text-[#654640] dark:text-dark-muted sm:text-[16px] text-[12px] font-poppins"
+    >
+      Gestión de inquilinos
+    </p>
+  </div>
+  <div>
+    <button
+      data-modal-target="authentication-modal"
+      data-modal-toggle="authentication-modal"
+      class="flex p-2 bg-[#ef893f] hover:bg-[#ff9951] text-white gap-2 font-poppins text-[13px] sm:text-[15px] rounded-lg transition-colors"
+    >
+      <img
+        src="/static/icons/ag_user.svg"
+        alt="agregar user"
+        class="w-5 h-5"
+      /><span class="hidden sm:inline">Agregar Inquilino</span
+      ><span class="sm:hidden">Agregar</span>
+    </button>
+  </div>
+</div>
+<div class="p-4 sm:px-8">
+  <div
+    class="bg-white dark:bg-dark-card rounded-lg shadow-sm dark:shadow-dark-border/20 p-4 sm:p-6 transition-colors flex flex-col gap-1"
+  >
+    <div class="flex items-center relative w-full">
+      <img
+        src="/static/icons/search.svg"
+        alt=""
+        class="w-5 h-5 dark:invert dark:opacity-80 absolute left-3 top-1/2 -translate-y-1/2"
+      />
+      <input
+        type="search"
+        id="searchInput"
+        placeholder="Buscar por nombre, cuarto o teléfono..."
+        class="pl-10 sm:pl-12 pr-4 py-2 text-sm sm:text-base rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-[#201813] w-full text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+      />
+    </div>
+    <!-- Filtros -->
+    <div class="flex flex-wrap gap-2 mt-4">
+      <button
+        type="button"
+        data-filter="todos"
+        class="filter-btn px-4 py-2 text-sm font-medium rounded-lg bg-[#ef893f] text-white"
+      >
+        Todos
+      </button>
+      <button
+        type="button"
+        data-filter="Pagado"
+        class="filter-btn px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-[#3d2a1f] text-gray-700 dark:text-gray-300"
+      >
+        Pagados
+      </button>
+      <button
+        type="button"
+        data-filter="Pendiente"
+        class="filter-btn px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-[#3d2a1f] text-gray-700 dark:text-gray-300"
+      >
+        Pendientes
+      </button>
+      <button
+        type="button"
+        data-filter="Atrasado"
+        class="filter-btn px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-[#3d2a1f] text-gray-700 dark:text-gray-300"
+      >
+        Atrasados
+      </button>
+    </div>
+  </div>
+</div>
+<div class="p-4 sm:px-8">
+  <div
+    class="bg-white dark:bg-dark-card rounded-lg shadow-sm dark:shadow-dark-border/20 p-4 sm:p-6 transition-colors flex flex-col gap-1 mb-5"
+  >
+    <h2 class="font-sans text-lg sm:text-xl font-semibold dark:text-white">
+      Lista de Inquilinos
+    </h2>
+
+    <!-- Vista de tabla para pantallas grandes (md+) -->
+    <div class="hidden md:block overflow-x-auto mt-4">
+      <table class="w-full" id="inquilinosTable">
+        <thead>
+          <tr
+            class="text-left border-b border-gray-300 dark:border-dark-border/50 text-gray-500 dark:text-gray-400"
+          >
+            <th class="py-3 px-4 font-medium text-sm">Nombre</th>
+            <th class="py-3 px-4 font-medium text-sm">Cuarto</th>
+            <th class="py-3 px-4 font-medium text-sm">Contacto</th>
+            <th class="py-3 px-4 font-medium text-sm">Inicio</th>
+            <th class="py-3 px-4 font-medium text-sm">Renta</th>
+            <th class="py-3 px-4 font-medium text-sm">Estado</th>
+            <th class="py-3 px-4 font-medium text-sm text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="text-gray-700 dark:text-gray-200">
+          {% for inquilino in inquilinos %}
+          <tr
+            class="inquilino-row border-b border-gray-200 dark:border-dark-border/30 hover:bg-gray-50 dark:hover:bg-[#2f2722] transition-colors"
+            data-estado="{{ inquilino[8] or '' }}"
+            data-nombre="{{ inquilino[1] or '' }} {{ inquilino[2] or '' }}"
+            data-cuarto="{{ inquilino[5] or '' }}"
+            data-telefono="{{ inquilino[4] or '' }}"
+          >
+            <td class="py-4 px-4">
+              <p class="font-medium text-gray-900 dark:text-white">
+                {{ inquilino[1] }} {{ inquilino[2] }}
+              </p>
+            </td>
+            <td class="py-4 px-4">
+              <span class="text-[#ef893f] font-medium">{{ inquilino[5] }}</span>
+            </td>
+            <td class="py-4 px-4">
+              <div class="flex flex-col">
+                <span class="text-gray-900 dark:text-white"
+                  >{{ inquilino[4] }}</span
+                >
+                <span class="text-sm text-gray-500 dark:text-gray-400"
+                  >DNI: {{ inquilino[3] }}</span
+                >
+              </div>
+            </td>
+            <td class="py-4 px-4">
+              <span class="text-gray-600 dark:text-gray-300"
+                >{{ inquilino[7] if inquilino[7] else 'N/A' }}</span
+              >
+            </td>
+            <td class="py-4 px-4">
+              <span class="text-gray-900 dark:text-white font-medium"
+                >S/{{ "%.2f"|format(inquilino[6]) }}</span
+              >
+            </td>
+            <td class="py-4 px-4">
+              {% if inquilino[8] == 'Pagado' %}
+              <span
+                class="px-3 py-1 bg-green-500 text-white rounded-full text-sm font-medium"
+                >Pagado</span
+              >
+              {% elif inquilino[8] == 'Pendiente' %}
+              <span
+                class="px-3 py-1 bg-[#ef893f] text-white rounded-full text-sm font-medium"
+                >Pendiente</span
+              >
+              {% elif inquilino[8] == 'Atrasado' %}
+              <span
+                class="px-3 py-1 bg-red-500 text-white rounded-full text-sm font-medium"
+                >Atrasado</span
+              >
+              {% endif %}
+            </td>
+            <td class="py-4 px-4">
+              <div class="flex items-center justify-end gap-3">
+                <button
+                  class="view-btn text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                  title="Ver detalles"
+                  data-id="{{ inquilino[0] }}"
+                  data-nombre="{{ inquilino[1] }}"
+                  data-apellido="{{ inquilino[2] }}"
+                  data-dni="{{ inquilino[3] }}"
+                  data-telefono="{{ inquilino[4] }}"
+                  data-cuarto="{{ inquilino[5] }}"
+                  data-renta="{{ inquilino[6] }}"
+                  data-fecha="{{ inquilino[7] }}"
+                  data-estado="{{ inquilino[8] }}"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  class="edit-btn text-gray-400 hover:text-blue-500 transition-colors"
+                  title="Editar"
+                  data-id="{{ inquilino[0] }}"
+                  data-nombre="{{ inquilino[1] }}"
+                  data-apellido="{{ inquilino[2] }}"
+                  data-dni="{{ inquilino[3] }}"
+                  data-telefono="{{ inquilino[4] }}"
+                  data-cuarto="{{ inquilino[5] }}"
+                  data-renta="{{ inquilino[6] }}"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="delete-btn text-gray-400 hover:text-red-500 transition-colors"
+                  title="Eliminar"
+                  data-id="{{ inquilino[0] }}"
+                  data-nombre="{{ inquilino[1] }} {{ inquilino[2] }}"
+                  data-cuarto="{{ inquilino[5] }}"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr id="emptyRow">
+            <td
+              colspan="7"
+              class="py-8 px-4 text-center text-gray-500 dark:text-gray-400"
+            >
+              <div class="flex flex-col items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-12 h-12 text-gray-300 dark:text-gray-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+                <p>No hay inquilinos registrados</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Vista de tarjetas para móvil y tablet (hasta md) -->
+    <div class="md:hidden mt-4 space-y-3" id="inquilinosCards">
+      {% for inquilino in inquilinos %}
+      <div
+        class="inquilino-card bg-gray-50 dark:bg-[#2a201b] rounded-xl p-4 border border-gray-200 dark:border-dark-border/30"
+        data-estado="{{ inquilino[8] or '' }}"
+        data-nombre="{{ inquilino[1] or '' }} {{ inquilino[2] or '' }}"
+        data-cuarto="{{ inquilino[5] or '' }}"
+        data-telefono="{{ inquilino[4] or '' }}"
+      >
+        <!-- Header de la tarjeta -->
+        <div class="flex justify-between items-start mb-3">
+          <div class="flex-1">
+            <h3 class="font-semibold text-gray-900 dark:text-white text-base">
+              {{ inquilino[1] }} {{ inquilino[2] }}
+            </h3>
+            <p class="text-[#ef893f] font-medium text-sm mt-0.5">
+              {{ inquilino[5] }}
+            </p>
+          </div>
+          <div>
+            {% if inquilino[8] == 'Pagado' %}
+            <span
+              class="px-2.5 py-1 bg-green-500 text-white rounded-full text-xs font-medium"
+              >Pagado</span
+            >
+            {% elif inquilino[8] == 'Pendiente' %}
+            <span
+              class="px-2.5 py-1 bg-[#ef893f] text-white rounded-full text-xs font-medium"
+              >Pendiente</span
+            >
+            {% elif inquilino[8] == 'Atrasado' %}
+            <span
+              class="px-2.5 py-1 bg-red-500 text-white rounded-full text-xs font-medium"
+              >Atrasado</span
+            >
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Info de la tarjeta -->
+        <div class="grid grid-cols-2 gap-3 text-sm mb-3">
+          <div>
+            <p class="text-gray-500 dark:text-gray-400 text-xs">Contacto</p>
+            <p class="text-gray-900 dark:text-white">{{ inquilino[4] }}</p>
+            <p class="text-gray-500 dark:text-gray-400 text-xs truncate">
+              DNI: {{ inquilino[3] }}
+            </p>
+          </div>
+          <div>
+            <p class="text-gray-500 dark:text-gray-400 text-xs">
+              Renta mensual
+            </p>
+            <p class="text-gray-900 dark:text-white font-semibold">
+              S/{{ "%.2f"|format(inquilino[6]) }}
+            </p>
+          </div>
+          <div>
+            <p class="text-gray-500 dark:text-gray-400 text-xs">Fecha inicio</p>
+            <p class="text-gray-600 dark:text-gray-300">
+              {{ inquilino[7] if inquilino[7] else 'N/A' }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Acciones de la tarjeta -->
+        <div
+          class="flex items-center justify-end gap-2 pt-3 border-t border-gray-200 dark:border-dark-border/30"
+        >
+          <button
+            class="view-btn p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-[#3a302a] rounded-lg transition-colors"
+            title="Ver detalles"
+            data-id="{{ inquilino[0] }}"
+            data-nombre="{{ inquilino[1] }}"
+            data-apellido="{{ inquilino[2] }}"
+            data-dni="{{ inquilino[3] }}"
+            data-telefono="{{ inquilino[4] }}"
+            data-cuarto="{{ inquilino[5] }}"
+            data-renta="{{ inquilino[6] }}"
+            data-fecha="{{ inquilino[7] }}"
+            data-estado="{{ inquilino[8] }}"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+              />
+            </svg>
+          </button>
+          <button
+            class="edit-btn p-2 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+            title="Editar"
+            data-id="{{ inquilino[0] }}"
+            data-nombre="{{ inquilino[1] }}"
+            data-apellido="{{ inquilino[2] }}"
+            data-dni="{{ inquilino[3] }}"
+            data-telefono="{{ inquilino[4] }}"
+            data-cuarto="{{ inquilino[5] }}"
+            data-renta="{{ inquilino[6] }}"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="delete-btn p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+            title="Eliminar"
+            data-id="{{ inquilino[0] }}"
+            data-nombre="{{ inquilino[1] }} {{ inquilino[2] }}"
+            data-cuarto="{{ inquilino[5] }}"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+      {% else %}
+      <div
+        id="emptyCards"
+        class="py-8 text-center text-gray-500 dark:text-gray-400"
+      >
+        <div class="flex flex-col items-center gap-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-12 h-12 text-gray-300 dark:text-gray-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+            />
+          </svg>
+          <p>No hay inquilinos registrados</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const searchInput = document.getElementById('searchInput');
+    const tableRows = document.querySelectorAll('.inquilino-row');
+    const cards = document.querySelectorAll('.inquilino-card');
+
+    let currentFilter = 'todos';
+    let currentSearch = '';
+
+    function setActiveFilter(btn) {
+      filterButtons.forEach((b) => {
+        b.classList.remove(
+          'bg-[#ef893f]',
+          'text-white',
+          'dark:bg-[#ef893f]',
+          'dark:text-white'
+        );
+        b.classList.add(
+          'bg-gray-200',
+          'text-gray-700',
+          'dark:bg-[#3d2a1f]',
+          'dark:text-gray-300'
+        );
+      });
+      btn.classList.remove(
+        'bg-gray-200',
+        'text-gray-700',
+        'dark:bg-[#3d2a1f]',
+        'dark:text-gray-300'
+      );
+      btn.classList.add(
+        'bg-[#ef893f]',
+        'text-white',
+        'dark:bg-[#ef893f]',
+        'dark:text-white'
+      );
+    }
+
+    function applyFilters() {
+      const searchTerm = currentSearch.toLowerCase();
+      tableRows.forEach((row) => {
+        const estado = row.dataset.estado;
+        const nombre = row.dataset.nombre.toLowerCase();
+        const cuarto = row.dataset.cuarto.toLowerCase();
+        const telefono = row.dataset.telefono.toLowerCase();
+        const matchesFilter =
+          currentFilter === 'todos' || estado === currentFilter;
+        const matchesSearch =
+          nombre.includes(searchTerm) ||
+          cuarto.includes(searchTerm) ||
+          telefono.includes(searchTerm);
+        row.style.display = matchesFilter && matchesSearch ? '' : 'none';
+      });
+      cards.forEach((card) => {
+        const estado = card.dataset.estado;
+        const nombre = card.dataset.nombre.toLowerCase();
+        const cuarto = card.dataset.cuarto.toLowerCase();
+        const telefono = card.dataset.telefono.toLowerCase();
+        const matchesFilter =
+          currentFilter === 'todos' || estado === currentFilter;
+        const matchesSearch =
+          nombre.includes(searchTerm) ||
+          cuarto.includes(searchTerm) ||
+          telefono.includes(searchTerm);
+        card.style.display = matchesFilter && matchesSearch ? '' : 'none';
+      });
+    }
+
+    filterButtons.forEach((button) => {
+      button.addEventListener('click', function () {
+        setActiveFilter(this);
+        currentFilter = this.dataset.filter;
+        applyFilters();
+      });
+    });
+
+    // Inicializar el filtro activo al cargar
+    setActiveFilter(document.querySelector('.filter-btn[data-filter="todos"]'));
+
+    searchInput.addEventListener('input', function () {
+      currentSearch = this.value;
+      applyFilters();
+    });
+    searchInput.addEventListener('search', function () {
+      currentSearch = this.value;
+      applyFilters();
+    });
+    searchInput.addEventListener('keyup', function () {
+      currentSearch = this.value;
+      applyFilters();
+    });
+  });
+
+  // Función para actualizar la renta al seleccionar un cuarto
+  function actualizarRenta(selectElement) {
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    const precio = selectedOption.dataset.precio || 0;
+    const inputRenta = document.getElementById('input-renta');
+    if (inputRenta) {
+      inputRenta.value = precio > 0 ? precio : '';
+    }
+  }
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Modal de agregar inquilino
+    const addModal = document.getElementById('add-inquilino-modal');
+    const addBtn = document.querySelector(
+      '[data-modal-target="authentication-modal"]'
+    );
+    const closeAddModal = document.getElementById('close-add-modal');
+    const cancelAddBtn = document.getElementById('cancel-add-btn');
+
+    if (addBtn && addModal) {
+      addBtn.addEventListener('click', () => {
+        addModal.classList.remove('hidden');
+        addModal.classList.add('flex');
+      });
+    }
+
+    if (closeAddModal) {
+      closeAddModal.addEventListener('click', () => {
+        addModal.classList.add('hidden');
+        addModal.classList.remove('flex');
+      });
+    }
+
+    if (cancelAddBtn) {
+      cancelAddBtn.addEventListener('click', () => {
+        addModal.classList.add('hidden');
+        addModal.classList.remove('flex');
+      });
+    }
+
+    // Cerrar modal al hacer clic fuera
+    if (addModal) {
+      addModal.addEventListener('click', (e) => {
+        if (e.target === addModal) {
+          addModal.classList.add('hidden');
+          addModal.classList.remove('flex');
+        }
+      });
+    }
+
+    // Modal de ver detalles
+    const viewModal = document.getElementById('view-inquilino-modal');
+    const closeViewModal = document.getElementById('close-view-modal');
+    const viewButtons = document.querySelectorAll('.view-btn');
+
+    viewButtons.forEach((btn) => {
+      btn.addEventListener('click', function () {
+        const id = this.dataset.id;
+        const nombre = this.dataset.nombre;
+        const apellido = this.dataset.apellido;
+        const dni = this.dataset.dni;
+        const telefono = this.dataset.telefono;
+        const cuarto = this.dataset.cuarto;
+        const renta = this.dataset.renta;
+        const fecha = this.dataset.fecha;
+        const estado = this.dataset.estado;
+
+        document.getElementById('view-nombre').textContent =
+          nombre + ' ' + apellido;
+        document.getElementById('view-dni').textContent = dni;
+        document.getElementById('view-telefono').textContent = telefono;
+        document.getElementById('view-cuarto').textContent = cuarto;
+        document.getElementById('view-renta').textContent =
+          'S/' + parseFloat(renta).toFixed(2);
+        document.getElementById('view-fecha').textContent = fecha || 'N/A';
+
+        const estadoEl = document.getElementById('view-estado');
+        estadoEl.textContent = estado;
+        estadoEl.className = 'px-3 py-1 rounded-full text-sm font-medium ';
+        if (estado === 'Pagado') {
+          estadoEl.className += 'bg-green-500 text-white';
+        } else if (estado === 'Pendiente') {
+          estadoEl.className += 'bg-[#ef893f] text-white';
+        } else {
+          estadoEl.className += 'bg-red-500 text-white';
+        }
+
+        viewModal.classList.remove('hidden');
+        viewModal.classList.add('flex');
+      });
+    });
+
+    if (closeViewModal) {
+      closeViewModal.addEventListener('click', () => {
+        viewModal.classList.add('hidden');
+        viewModal.classList.remove('flex');
+      });
+    }
+
+    if (viewModal) {
+      viewModal.addEventListener('click', (e) => {
+        if (e.target === viewModal) {
+          viewModal.classList.add('hidden');
+          viewModal.classList.remove('flex');
+        }
+      });
+    }
+
+    // Modal de editar
+    const editModal = document.getElementById('edit-inquilino-modal');
+    const closeEditModal = document.getElementById('close-edit-modal');
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    const editButtons = document.querySelectorAll('.edit-btn');
+
+    editButtons.forEach((btn) => {
+      btn.addEventListener('click', function () {
+        const id = this.dataset.id;
+        const nombre = this.dataset.nombre;
+        const apellido = this.dataset.apellido;
+        const dni = this.dataset.dni;
+        const telefono = this.dataset.telefono;
+        const cuarto = this.dataset.cuarto;
+        const renta = this.dataset.renta;
+
+        document.getElementById('edit-id').value = id;
+        document.getElementById('edit-nombre').value = nombre;
+        document.getElementById('edit-apellido').value = apellido;
+        document.getElementById('edit-dni').value = dni;
+        document.getElementById('edit-telefono').value = telefono;
+        document.getElementById('edit-cuarto').value = cuarto;
+        document.getElementById('edit-renta').value = renta;
+
+        // Actualizar action del formulario
+        document.getElementById(
+          'edit-form'
+        ).action = `/inquilinos/editar/${id}`;
+
+        editModal.classList.remove('hidden');
+        editModal.classList.add('flex');
+      });
+    });
+
+    if (closeEditModal) {
+      closeEditModal.addEventListener('click', () => {
+        editModal.classList.add('hidden');
+        editModal.classList.remove('flex');
+      });
+    }
+
+    if (cancelEditBtn) {
+      cancelEditBtn.addEventListener('click', () => {
+        editModal.classList.add('hidden');
+        editModal.classList.remove('flex');
+      });
+    }
+
+    if (editModal) {
+      editModal.addEventListener('click', (e) => {
+        if (e.target === editModal) {
+          editModal.classList.add('hidden');
+          editModal.classList.remove('flex');
+        }
+      });
+    }
+
+    // Modal de eliminar
+    const deleteModal = document.getElementById('delete-inquilino-modal');
+    const closeDeleteModal = document.getElementById('close-delete-modal');
+    const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+
+    deleteButtons.forEach((btn) => {
+      btn.addEventListener('click', function () {
+        const id = this.dataset.id;
+        const nombre = this.dataset.nombre;
+        const cuarto = this.dataset.cuarto;
+
+        document.getElementById('delete-nombre').textContent = nombre;
+        document.getElementById('delete-cuarto').textContent =
+          'Cuarto ' + cuarto;
+        document.getElementById(
+          'delete-inquilino-form'
+        ).action = `/inquilinos/eliminar/${id}`;
+
+        deleteModal.classList.remove('hidden');
+        deleteModal.classList.add('flex');
+      });
+    });
+
+    if (closeDeleteModal) {
+      closeDeleteModal.addEventListener('click', () => {
+        deleteModal.classList.add('hidden');
+        deleteModal.classList.remove('flex');
+      });
+    }
+
+    if (cancelDeleteBtn) {
+      cancelDeleteBtn.addEventListener('click', () => {
+        deleteModal.classList.add('hidden');
+        deleteModal.classList.remove('flex');
+      });
+    }
+
+    if (deleteModal) {
+      deleteModal.addEventListener('click', (e) => {
+        if (e.target === deleteModal) {
+          deleteModal.classList.add('hidden');
+          deleteModal.classList.remove('flex');
+        }
+      });
+    }
+  });
+</script>
+
+<!-- Modal Agregar Inquilino -->
+<div
+  id="add-inquilino-modal"
+  class="hidden fixed inset-0 z-50 items-center justify-center bg-black/50 p-4"
+>
+  <div
+    class="bg-white dark:bg-dark-card rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+  >
+    <div
+      class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-dark-border"
+    >
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+        Agregar Nuevo Inquilino
+      </h3>
+      <button
+        id="close-add-modal"
+        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+      >
+        <svg
+          class="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          ></path>
+        </svg>
+      </button>
+    </div>
+    <form
+      action="{{ url_for('inquilinos.agregar') }}"
+      method="POST"
+      class="p-4 space-y-4"
+    >
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >Nombre</label
+          >
+          <input
+            type="text"
+            name="nombre"
+            required
+            class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-[#201813] text-gray-900 dark:text-white focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+          />
+        </div>
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >Apellido</label
+          >
+          <input
+            type="text"
+            name="apellido"
+            required
+            class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-[#201813] text-gray-900 dark:text-white focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >DNI</label
+          >
+          <input
+            type="text"
+            name="dni"
+            required
+            pattern="[0-9]+"
+            title="Solo números"
+            class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-[#201813] text-gray-900 dark:text-white focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+          />
+        </div>
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >Teléfono</label
+          >
+          <input
+            type="tel"
+            name="telefono"
+            required
+            class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-[#201813] text-gray-900 dark:text-white focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >Cuarto</label
+          >
+          <select
+            name="cuarto"
+            id="select-cuarto"
+            required
+            class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-[#201813] text-gray-900 dark:text-white focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+          >
+            {% if cuartos_disponibles|length > 0 %}
+            <option value="" data-precio="0">Seleccionar cuarto</option>
+            {% for cuarto in cuartos_disponibles %}
+            <option value="{{ cuarto[1] }}" data-precio="{{ cuarto[3] }}">
+              {{ cuarto[1] }} - Piso {{ cuarto[2] }} (S/{{
+              "%.2f"|format(cuarto[3]) }})
+            </option>
+            {% endfor %} {% else %}
+            <option value="" data-precio="0">No hay cuartos disponibles</option>
+            {% endif %}
+          </select>
+        </div>
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >Renta Mensual (S/)</label
+          >
+          <input
+            type="number"
+            name="renta_mensual"
+            id="input-renta"
+            required
+            min="0.01"
+            step="0.01"
+            readonly
+            class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-gray-100 dark:bg-[#1a1410] text-gray-900 dark:text-white focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          const selectCuarto = document.getElementById('select-cuarto');
+          const inputRenta = document.getElementById('input-renta');
+          selectCuarto.addEventListener('change', function () {
+            const selected = selectCuarto.options[selectCuarto.selectedIndex];
+            const precio = selected.getAttribute('data-precio');
+            inputRenta.value = precio ? parseFloat(precio).toFixed(2) : '';
+          });
+        });
+      </script>
+
+      <div>
+        <label
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >Fecha de Inicio</label
+        >
+        <input
+          type="date"
+          name="fecha_inicio"
+          required
+          class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-[#201813] text-gray-900 dark:text-white focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+        />
+      </div>
+
+      <div class="flex items-center gap-2">
+        <input
+          type="checkbox"
+          name="ya_pago"
+          id="ya_pago"
+          class="w-4 h-4 text-[#ef893f] rounded focus:ring-[#ef893f]"
+        />
+        <label for="ya_pago" class="text-sm text-gray-700 dark:text-gray-300"
+          >¿Ya realizó el primer pago?</label
+        >
+      </div>
+
+      <div
+        class="flex gap-3 pt-4 border-t border-gray-200 dark:border-dark-border"
+      >
+        <button
+          type="button"
+          id="cancel-add-btn"
+          class="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-dark-border text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-hover transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="flex-1 px-4 py-2 rounded-lg bg-[#ef893f] hover:bg-[#ff9951] text-white font-medium transition-colors"
+        >
+          Agregar Inquilino
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Ver Detalles -->
+<div
+  id="view-inquilino-modal"
+  class="hidden fixed inset-0 z-50 items-center justify-center bg-black/50 p-4"
+>
+  <div class="bg-white dark:bg-dark-card rounded-xl shadow-xl w-full max-w-md">
+    <div
+      class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-dark-border"
+    >
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+        Detalles del Inquilino
+      </h3>
+      <button
+        id="close-view-modal"
+        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+      >
+        <svg
+          class="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          ></path>
+        </svg>
+      </button>
+    </div>
+    <div class="p-4 space-y-4">
+      <div
+        class="text-center pb-4 border-b border-gray-200 dark:border-dark-border"
+      >
+        <div
+          class="w-16 h-16 bg-[#ef893f] rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-8 h-8"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            />
+          </svg>
+        </div>
+        <h4
+          id="view-nombre"
+          class="text-xl font-semibold text-gray-900 dark:text-white"
+        ></h4>
+        <span
+          id="view-estado"
+          class="px-3 py-1 rounded-full text-sm font-medium"
+        ></span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <p class="text-xs text-gray-500 dark:text-gray-400">DNI</p>
+          <p
+            id="view-dni"
+            class="text-gray-900 dark:text-white font-medium"
+          ></p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Teléfono</p>
+          <p
+            id="view-telefono"
+            class="text-gray-900 dark:text-white font-medium"
+          ></p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Cuarto</p>
+          <p id="view-cuarto" class="text-[#ef893f] font-semibold"></p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Renta Mensual</p>
+          <p
+            id="view-renta"
+            class="text-gray-900 dark:text-white font-semibold"
+          ></p>
+        </div>
+        <div class="col-span-2">
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            Fecha de Ingreso
+          </p>
+          <p
+            id="view-fecha"
+            class="text-gray-900 dark:text-white font-medium"
+          ></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Inquilino -->
+<div
+  id="edit-inquilino-modal"
+  class="hidden fixed inset-0 z-50 items-center justify-center bg-black/50 p-4"
+>
+  <div
+    class="bg-white dark:bg-dark-card rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+  >
+    <div
+      class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-dark-border"
+    >
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+        Editar Inquilino
+      </h3>
+      <button
+        id="close-edit-modal"
+        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+      >
+        <svg
+          class="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          ></path>
+        </svg>
+      </button>
+    </div>
+    <form id="edit-form" action="" method="POST" class="p-4 space-y-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <input type="hidden" id="edit-id" name="id" />
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >Nombre</label
+          >
+          <input
+            type="text"
+            id="edit-nombre"
+            name="nombre"
+            required
+            class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-[#201813] text-gray-900 dark:text-white focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+          />
+        </div>
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >Apellido</label
+          >
+          <input
+            type="text"
+            id="edit-apellido"
+            name="apellido"
+            required
+            class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-[#201813] text-gray-900 dark:text-white focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >DNI</label
+          >
+          <input
+            type="text"
+            id="edit-dni"
+            name="dni"
+            required
+            pattern="[0-9]+"
+            class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-[#201813] text-gray-900 dark:text-white focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+          />
+        </div>
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >Teléfono</label
+          >
+          <input
+            type="tel"
+            id="edit-telefono"
+            name="telefono"
+            required
+            class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-[#201813] text-gray-900 dark:text-white focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >Cuarto</label
+          >
+          <input
+            type="text"
+            id="edit-cuarto"
+            name="cuarto"
+            required
+            disabled
+            class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-gray-100 dark:bg-[#1a1410] text-gray-500 dark:text-gray-400 cursor-not-allowed"
+          />
+        </div>
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >Renta Mensual (S/)</label
+          >
+          <input
+            type="number"
+            id="edit-renta"
+            name="renta_mensual"
+            required
+            min="0.01"
+            step="0.01"
+            class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-[#201813] text-gray-900 dark:text-white focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      <div
+        class="flex gap-3 pt-4 border-t border-gray-200 dark:border-dark-border"
+      >
+        <button
+          type="button"
+          id="cancel-edit-btn"
+          class="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-dark-border text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-hover transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="flex-1 px-4 py-2 rounded-lg bg-[#ef893f] hover:bg-[#ff9951] text-white font-medium transition-colors"
+        >
+          Guardar Cambios
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Eliminar Inquilino -->
+<div
+  id="delete-inquilino-modal"
+  class="hidden fixed inset-0 z-50 items-center justify-center bg-black/50 p-4"
+>
+  <div class="bg-white dark:bg-[#2a1f1a] rounded-2xl shadow-xl w-full max-w-md">
+    <!-- Header -->
+    <div class="flex items-start justify-between p-6 pb-0">
+      <div>
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
+          Eliminar Inquilino
+        </h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          ¿Estás seguro de eliminar a este inquilino?
+        </p>
+      </div>
+      <button
+        type="button"
+        id="close-delete-modal"
+        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center dark:hover:bg-gray-700 dark:hover:text-white"
+      >
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14">
+          <path
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Contenido -->
+    <div class="p-6">
+      <!-- Recuadro rojo con info del inquilino -->
+      <div class="bg-red-500/10 border border-red-500/50 rounded-lg p-4 mb-4">
+        <div class="flex items-center gap-3">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6 text-red-500 flex-shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+          <div>
+            <p class="font-semibold text-red-500" id="delete-nombre">
+              Nombre del inquilino
+            </p>
+            <p class="text-sm text-red-400" id="delete-cuarto">Cuarto</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+        Esta acción eliminará permanentemente al inquilino y todos sus pagos
+        registrados. El cuarto quedará disponible.
+      </p>
+
+      <!-- Botones -->
+      <div class="flex gap-3">
+        <form id="delete-inquilino-form" method="POST" class="flex-1">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button
+            type="submit"
+            class="w-full px-6 py-2.5 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+          >
+            Eliminar
+          </button>
+        </form>
+        <button
+          type="button"
+          id="cancel-delete-btn"
+          class="flex-1 px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors dark:bg-[#3d2a1f] dark:text-gray-300 dark:hover:bg-[#4d3a2f]"
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

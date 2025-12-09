@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es" class="">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ef893f" />
+    <title>{% block title %}Sistema{% endblock %}</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/output.css') }}"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Script de modo oscuro (cargar antes para evitar flash) -->
+    <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
+
+    <style>
+      .header-blur {
+        -webkit-backdrop-filter: blur(24px);
+        backdrop-filter: blur(24px);
+      }
+
+      /* Transiciones suaves para el modo oscuro */
+      html {
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      body,
+      .dark-transition {
+        transition: background-color 0.3s ease, color 0.3s ease,
+          border-color 0.3s ease;
+      }
+
+      /* Estilos del botón de tema */
+      #theme-toggle {
+        transition: transform 0.2s ease, background-color 0.2s ease;
+      }
+
+      #theme-toggle:hover {
+        transform: scale(1.1);
+      }
+
+      #theme-toggle:active {
+        transform: scale(0.95);
+      }
+
+      /* Animación de los iconos */
+      #sun-icon,
+      #moon-icon {
+        transition: opacity 0.2s ease, transform 0.3s ease;
+      }
+
+      /* Icono del calendario en inputs de fecha */
+      input[type='date']::-webkit-calendar-picker-indicator {
+        filter: invert(0);
+        cursor: pointer;
+      }
+
+      .dark input[type='date']::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+      }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PWA manifest -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='img/icon-192.png') }}">
+    {% block head %}{% endblock %}
+  </head>
+
+  <body class="bg-[#f4f4f4] dark:bg-dark-bg text-gray-900 dark:text-dark-text">
+    <header
+      class="sticky top-0 left-0 right-0 z-10 bg-[#ffffffbf] dark:bg-[#1a1a1abf] header-blur"
+    >
+      <!-- drawer init and show -->
+      <div
+        class="text-start border-b border-gray-200 dark:border-dark-border shadow-sm flex justify-between items-center"
+      >
+        <button
+          id="menu-toggle-btn"
+          class="p-1 m-3 rounded-md hover:bg-gray-200 dark:hover:bg-dark-card active:bg-gray-300 dark:active:bg-dark-border transition-colors duration-150"
+          type="button"
+          aria-controls="drawer-navigation"
+        >
+          <img
+            src="/static/icons/menu2.svg"
+            alt="Menú"
+            class="dark:invert dark:opacity-90"
+          />
+        </button>
+        
+        <!-- Botón de prueba para cambiar tema (visible en header) -->
+        <button
+          id="theme-toggle"
+          type="button"
+          aria-label="Cambiar tema"
+          class="p-2 m-3 rounded-md hover:bg-gray-200 dark:hover:bg-dark-card transition-colors duration-150 flex items-center"
+        >
+          <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.36-6.36l-1.42 1.42M7.05 16.95l-1.42 1.42m12.02 0l1.42-1.42M7.05 7.05L5.63 5.63M12 7a5 5 0 100 10 5 5 0 000-10z" />
+          </svg>
+          <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="opacity:0">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- drawer component -->
+    <div
+      id="drawer-navigation"
+      class="fixed top-0 left-0 z-50 h-screen p-4 overflow-y-auto transition-transform -translate-x-full bg-[#261d17] dark:bg-[#1a1410] w-64 sm:w-80"
+      tabindex="-1"
+      aria-labelledby="drawer-navigation-label"
+    >
+      <div class="border-default pb-4 flex items-center">
+        <a href="" class="flex items-center space-x-2 rtl:space-x-reverse">
+          <img
+            src="/static/img/avatar-mujer.jpg"
+            class="h-8 w-8 box-border rounded-full"
+            alt="Avatar usuario"
+          />
+          <span
+            class="self-center text-lg font-semibold whitespace-nowrap text-[#ffffff]"
+            >Usuario</span
+          >
+        </a>
+
+        <button
+          type="button"
+          id="drawer-close-btn"
+          aria-controls="drawer-navigation"
+          class="text-body bg-transparent hover:text-heading hover:bg-[#372c25] dark:hover:bg-dark-border rounded-base w-9 h-9 absolute top-2.5 right-2.5 flex items-center justify-center"
+          aria-label="Cerrar menú"
+        >
+          <img src="/static/icons/close.svg" alt="Cerrar" />
+        </button>
+      </div>
+      <p class="text-[#8b8b8b] text-xs uppercase tracking-wider py-6 pb-3">
+        Navegación
+      </p>
+      <div class="py-1 overflow-y-auto">
+        <ul class="flex flex-col space-y-1 font-medium">
+          <!-- Dashboard - Activo -->
+          <li
+            class="{% if request.endpoint == 'dashboard' %}bg-[#3d2a1f]{% endif %} hover:bg-[#3d2a1f] p-2 px-3 rounded-lg transition-colors"
+          >
+            <a
+              href="{{ url_for('dashboard') }}"
+              class="flex items-center py-1 group text-sm"
+            >
+              <svg
+                class="w-5 h-5 {% if request.endpoint == 'dashboard' %}text-[#ef893f]{% else %}text-[#8b8b8b] group-hover:text-[#ef893f]{% endif %}"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                />
+              </svg>
+              <span
+                class="ml-3 {% if request.endpoint == 'dashboard' %}text-[#ef893f]{% else %}text-[#ffffff] group-hover:text-[#ef893f]{% endif %}"
+                >Dashboard</span
+              >
+            </a>
+          </li>
+          <!-- Inquilinos -->
+          <li
+            class="{% if request.endpoint and 'inquilinos' in request.endpoint %}bg-[#3d2a1f]{% endif %} hover:bg-[#3d2a1f] p-2 px-3 rounded-lg transition-colors"
+          >
+            <a
+              href="{{ url_for('inquilinos.index') }}"
+              class="flex items-center py-1 group text-sm"
+            >
+              <svg
+                class="w-5 h-5 {% if request.endpoint and 'inquilinos' in request.endpoint %}text-[#ef893f]{% else %}text-[#8b8b8b] group-hover:text-[#ef893f]{% endif %}"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+              <span
+                class="ml-3 {% if request.endpoint and 'inquilinos' in request.endpoint %}text-[#ef893f]{% else %}text-[#ffffff] group-hover:text-[#ef893f]{% endif %}"
+                >Inquilinos</span
+              >
+            </a>
+          </li>
+          <!-- Pagos -->
+          <li
+            class="{% if request.endpoint and 'pagos' in request.endpoint %}bg-[#3d2a1f]{% endif %} hover:bg-[#3d2a1f] p-2 px-3 rounded-lg transition-colors"
+          >
+            <a
+              href="{{ url_for('pagos.index') }}"
+              class="flex items-center py-1 group text-sm"
+            >
+              <svg
+                class="w-5 h-5 {% if request.endpoint and 'pagos' in request.endpoint %}text-[#ef893f]{% else %}text-[#8b8b8b] group-hover:text-[#ef893f]{% endif %}"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                />
+              </svg>
+              <span
+                class="ml-3 {% if request.endpoint and 'pagos' in request.endpoint %}text-[#ef893f]{% else %}text-[#ffffff] group-hover:text-[#ef893f]{% endif %}"
+                >Pagos</span
+              >
+            </a>
+          </li>
+
+          <!-- Cuartos -->
+          <li
+            class="{% if request.endpoint and 'cuartos' in request.endpoint %}bg-[#3d2a1f]{% endif %} hover:bg-[#3d2a1f] p-2 px-3 rounded-lg transition-colors"
+          >
+            <a
+              href="{{ url_for('cuartos.index') }}"
+              class="flex items-center py-1 group text-sm"
+            >
+              <svg
+                class="w-5 h-5 {% if request.endpoint and 'cuartos' in request.endpoint %}text-[#ef893f]{% else %}text-[#8b8b8b] group-hover:text-[#ef893f]{% endif %}"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M14 12v.01"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                />
+                <path
+                  d="M3 21h18"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                />
+                <path
+                  d="M6 21v-16a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v16"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                />
+              </svg>
+
+              <span
+                class="ml-3 {% if request.endpoint and 'cuartos' in request.endpoint %}text-[#ef893f]{% else %}text-[#ffffff] group-hover:text-[#ef893f]{% endif %}"
+                >Cuartos</span
+              >
+            </a>
+          </li>
+
+          <!-- Configuración -->
+          <li
+            class="{% if request.endpoint and 'config' in request.endpoint %}bg-[#3d2a1f]{% endif %} hover:bg-[#3d2a1f] p-2 px-3 rounded-lg transition-colors"
+          >
+            <a
+              href="{{ url_for('config.index') }}"
+              class="flex items-center py-1 group text-sm"
+            >
+              <svg
+                class="w-5 h-5 {% if request.endpoint and 'config' in request.endpoint %}text-[#ef893f]{% else %}text-[#8b8b8b] group-hover:text-[#ef893f]{% endif %}"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              <span
+                class="ml-3 {% if request.endpoint and 'config' in request.endpoint %}text-[#ef893f]{% else %}text-[#ffffff] group-hover:text-[#ef893f]{% endif %}"
+                >Configuración</span
+              >
+            </a>
+          </li>
+          
+          <!-- Botón Cerrar sesión dentro de la lista -->
+          <li class="mt-4">
+            <form action="{{ url_for('logout') }}" method="post">
+              {{ form.csrf_token if form and form.csrf_token }}
+              <button
+                type="submit"
+                class="flex items-center p-2 px-3 w-full text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors group justify-center"
+              >
+                <svg
+                  class="w-5 h-5 text-white mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+                Cerrar sesión
+              </button>
+            </form>
+          </li>
+        </ul>
+      </ul>
+    </div>
+    </div>
+
+    <!-- Overlay -->
+    <div
+      id="drawer-overlay"
+      class="fixed inset-0 bg-black z-40 transition-opacity duration-300 opacity-0 pointer-events-none"
+    ></div>
+
+    <!-- Mensajes Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <div class="fixed top-20 right-4 z-50 space-y-2 max-w-sm">
+      {% for category, message in messages %}
+      <div
+        class="flash-message px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slide-in {% if category == 'success' %}bg-green-500 text-white {% elif category == 'error' %}bg-red-500 text-white {% elif category == 'warning' %}bg-yellow-500 text-white {% else %}bg-blue-500 text-white{% endif %}"
+      >
+        {% if category == 'success' %}
+        <svg
+          class="w-5 h-5 flex-shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M5 13l4 4L19 7"
+          ></path>
+        </svg>
+        {% elif category == 'error' %}
+        <svg
+          class="w-5 h-5 flex-shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          ></path>
+        </svg>
+        {% else %}
+        <svg
+          class="w-5 h-5 flex-shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          ></path>
+        </svg>
+        {% endif %}
+        <span class="text-sm font-medium">{{ message }}</span>
+        <button
+          onclick="this.parentElement.remove()"
+          class="ml-auto text-white/80 hover:text-white"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+    <style>
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      .animate-slide-in {
+        animation: slideIn 0.3s ease-out;
+      }
+    </style>
+    <script>
+      // Auto-ocultar mensajes después de 5 segundos
+      setTimeout(() => {
+        document.querySelectorAll('.flash-message').forEach((el) => {
+          el.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+          el.style.opacity = '0';
+          el.style.transform = 'translateX(100%)';
+          setTimeout(() => el.remove(), 300);
+        });
+      }, 5000);
+    </script>
+    {% endif %} {% endwith %}
+
+    <main class="dark-transition">{% block content %}{% endblock %}</main>
+
+    <script>
+      // Script para controlar el overlay en móvil cuando se abre/cierra el drawer
+      (function () {
+        const overlay = document.getElementById('drawer-overlay');
+        const drawer = document.getElementById('drawer-navigation');
+        const menuBtn = document.getElementById('menu-toggle-btn');
+
+        if (!overlay || !drawer) return;
+
+        // Función para cerrar el drawer con animación
+        function closeDrawer() {
+          // Cerrar drawer - agregar clase para ocultar
+          drawer.classList.add('-translate-x-full');
+          // También remover la clase que Flowbite podría agregar
+          drawer.classList.remove('transform-none');
+
+          // Quitar fondo gris al botón del menú
+          if (menuBtn)
+            menuBtn.classList.remove('bg-gray-200', 'dark:bg-dark-card');
+          // Hacer fade out del overlay
+          overlay.classList.remove('opacity-50');
+          overlay.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        // Función para abrir el drawer
+        function openDrawer() {
+          // Mostrar overlay con fade in
+          overlay.classList.remove('opacity-0', 'pointer-events-none');
+          overlay.classList.add('opacity-50');
+          // Pequeño delay para que el overlay aparezca antes de la animación
+          setTimeout(function () {
+            drawer.classList.remove('-translate-x-full');
+          }, 10);
+          // Agregar fondo gris al botón del menú
+          if (menuBtn)
+            menuBtn.classList.add('bg-gray-200', 'dark:bg-dark-card');
+        }
+
+        // Abrir drawer al hacer click en el botón de menú
+        menuBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          openDrawer();
+        });
+
+        // Cerrar drawer al hacer click en el botón X
+        const closeBtn = document.getElementById('drawer-close-btn');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            closeDrawer();
+          });
+        }
+
+        // Cerrar drawer al hacer click en el overlay (fuera del menú)
+        overlay.addEventListener('click', function (e) {
+          closeDrawer();
+        });
+
+        // Cerrar drawer al hacer click fuera del drawer
+        document.addEventListener('click', function (e) {
+          // Si el drawer está visible (abierto)
+          if (!drawer.classList.contains('-translate-x-full')) {
+            // Si el clic NO fue dentro del drawer y NO fue en el botón de menú
+            if (!drawer.contains(e.target) && !menuBtn.contains(e.target)) {
+              closeDrawer();
+            }
+          }
+        });
+
+        // Al redimensionar, cerrar overlay y drawer
+        window.addEventListener('resize', function () {
+          if (!drawer.classList.contains('-translate-x-full')) {
+            closeDrawer();
+          }
+        });
+
+        
+      })();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js"></script>
+    {% block scripts %}{% endblock %}
+  </body>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('{{ url_for("static", filename="sw.js") }}')
+          .then(function(reg) { console.log('Service worker registrado.', reg); })
+          .catch(function(err) { console.warn('Service worker fallo:', err); });
+      });
+    }
+  </script>
+  <script>
+    // Exponer el evento `beforeinstallprompt` y un helper `triggerPWAInstall`.
+    // El botón de instalación se gestiona desde la página de Configuración, así
+    // que aquí sólo mantenemos el listener y el helper para que `config.html`
+    // pueda invocarlo.
+    (function(){
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        // Guardar el evento para que otros scripts lo puedan usar
+        window.deferredPWAInstall = e;
+      });
+
+      window.addEventListener('load', function(){
+        // detectar si la app ya está instalada / en modo standalone
+        function updateInstalledState(){
+          const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+          window.isPWAInstalled = !!isStandalone;
+        }
+        updateInstalledState();
+
+        // Helper para que otros scripts (ej. config) puedan lanzar el prompt si está disponible
+        window.triggerPWAInstall = async function(){
+          if (window.deferredPWAInstall) {
+            try {
+              window.deferredPWAInstall.prompt();
+              const choice = await window.deferredPWAInstall.userChoice;
+              window.deferredPWAInstall = null;
+              return choice;
+            } catch (e) { console.warn('Error triggerPWAInstall', e); return null; }
+          }
+          return null;
+        };
+      });
+    })();
+  </script>
+</html>

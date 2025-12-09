@@ -6,7 +6,7 @@ CREATE TABLE usuarios (
     rol TEXT NOT NULL CHECK(rol IN ('admin', 'usuario')),
     fecha_creacion TEXT NOT NULL
 );
-CREATE TABLE sqlite_sequence(name,seq);
+CREATE TABLE sqlite_sequence(name, seq);
 CREATE TABLE inquilinos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT NOT NULL,
@@ -16,6 +16,8 @@ CREATE TABLE inquilinos (
     monto_mensual REAL NOT NULL,
     dia_pago INTEGER NOT NULL,
     notas TEXT,
+    fecha_ingreso TEXT,
+    apellido TEXT,
     FOREIGN KEY (id_cuarto) REFERENCES cuartos(id)
 );
 CREATE TABLE pagos (

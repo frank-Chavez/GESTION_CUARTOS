@@ -1,684 +1,1089 @@
-<!DOCTYPE html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sistema</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/output.css') }}"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+{% extends "base.html" %} {% block title %}Dashboard - Sistema{% endblock %} {%
+block content %}
+<style>
+  /* Scroll personalizado para la lista de inquilinos */
+  .inquilinos-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #ef893f #f5f5f5;
+  }
+  .inquilinos-scroll::-webkit-scrollbar {
+    width: 8px;
+  }
+  .inquilinos-scroll::-webkit-scrollbar-thumb {
+    background: #ef893f;
+    border-radius: 8px;
+  }
+  .inquilinos-scroll::-webkit-scrollbar-track {
+    background: #f5f5f5;
+  }
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  </head>
-
-  <body class="bg-[#f4f4f4]">
-    <header class="bg-[#ffffff]">
-      <!-- drawer init and show -->
-      <div class="text-start border-b border-gray-200 shadow-sm">
-        <button
-          class="p-1 m-3 rounded-md"
-          type="button"
-          data-drawer-target="drawer-navigation"
-          data-drawer-show="drawer-navigation"
-          aria-controls="drawer-navigation"
-        >
-          <img src="/static/icons/menu2.svg" alt="" />
-        </button>
-      </div>
-
-      <!-- drawer component -->
-      <div
-        id="drawer-navigation"
-        class="fixed top-0 left-0 z-40 h-screen p-4 overflow-y-auto transition-transform -translate-x-full bg-neutral-primary-soft w-64 sm:w-80 bg-[#261d17]"
-        tabindex="-1"
-        aria-labelledby="drawer-navigation-label"
+  /* Scroll en modo oscuro */
+  .dark .inquilinos-scroll {
+    scrollbar-color: #ef893f #2a2a2a;
+  }
+  .dark .inquilinos-scroll::-webkit-scrollbar-thumb {
+    background: #ef893f;
+  }
+  .dark .inquilinos-scroll::-webkit-scrollbar-thumb:hover {
+    background: #ff9951;
+  }
+  .dark .inquilinos-scroll::-webkit-scrollbar-track {
+    background: #2a2a2a;
+  }
+</style>
+<!----------------------------------------------TITULO--------------------------------------------->
+<div class="flex flex-col p-4 sm:px-8 w-full">
+  <h2
+    class="sm:text-[35px] text-[25px] font-poppins font-[900] text-gray-900 dark:text-white"
+  >
+    Dashboard
+  </h2>
+  <p
+    class="text-[#654640] dark:text-dark-muted sm:text-[16px] text-[12px] font-poppins"
+  >
+    Resumen general del sistema de alquileres
+  </p>
+</div>
+<!-------------------------------------------------------------------------------------------------------------->
+<!----------------------------------------------OPCIONES RAPIDAS--------------------------------------------->
+<div class="flex sm:flex-wrap flex-col sm:flex-row w-full gap-4 p-4 sm:px-8">
+  <!-- Card 1 -->
+  <div
+    class="bg-white dark:bg-dark-card flex-1 min-w-[160px] sm:min-w-[200px] p-4 sm:p-6 rounded-lg shadow-sm dark:shadow-dark-border/20 flex justify-between items-start transition-colors"
+  >
+    <div class="flex flex-col">
+      <p class="text-sm text-gray-500 dark:text-dark-muted font-poppins">
+        Cuartos Ocupados
+      </p>
+      <p
+        class="text-3xl font-bold font-display text-gray-900 dark:text-white py-2"
       >
-        <div class="border-default pb-4 flex items-center">
-          <a href="" class="flex items-center space-x-2 rtl:space-x-reverse">
-            <img
-              src="/static/img/avatar-mujer.jpg"
-              class="h-8 w-8 box-border rounded-full"
-              alt="Avatar usuario"
-            />
-            <span
-              class="self-center text-lg font-semibold whitespace-nowrap text-heading text-[#ffffff]"
-              >Usuario</span
+        {{ cuartos_ocupados }}/{{ total_cuartos }}
+      </p>
+    </div>
+    <div
+      class="bg-[#fdf5ef] dark:bg-[#3d2a1a] p-2 rounded-lg flex items-center justify-center"
+    >
+      <img
+        src="/static/icons/cuartos.svg"
+        alt="icono cuartos"
+        class="w-7 h-7"
+      />
+    </div>
+  </div>
+
+  <!-- Card 2 -->
+  <div
+    class="bg-white dark:bg-dark-card flex-1 min-w-[160px] sm:min-w-[200px] p-4 sm:p-6 rounded-lg shadow-sm dark:shadow-dark-border/20 flex justify-between items-start transition-colors"
+  >
+    <div class="flex flex-col">
+      <p class="text-sm text-gray-500 dark:text-dark-muted font-poppins">
+        Ganancias del Mes
+      </p>
+      <p
+        class="text-3xl font-bold font-display text-gray-900 dark:text-white py-2"
+      >
+        S/.{{ "{:,.0f}".format(ganancias_mes) }}
+      </p>
+    </div>
+    <div
+      class="bg-[#fdf5ef] dark:bg-[#3d2a1a] p-2 rounded-lg flex items-center justify-center"
+    >
+      <img src="/static/icons/moneda.svg" alt="icono dolar" class="w-7 h-7" />
+    </div>
+  </div>
+
+  <!-- Card 3 -->
+  <div
+    class="bg-white dark:bg-dark-card flex-1 min-w-[160px] sm:min-w-[200px] p-4 sm:p-6 rounded-lg shadow-sm dark:shadow-dark-border/20 flex justify-between items-start transition-colors"
+  >
+    <div class="flex flex-col">
+      <p class="text-sm text-gray-500 dark:text-dark-muted font-poppins">
+        Inquilinos Activos
+      </p>
+      <p
+        class="text-3xl font-bold font-display text-gray-900 dark:text-white py-2"
+      >
+        {{ total_inquilinos }}
+      </p>
+    </div>
+    <div
+      class="bg-[#fdf5ef] dark:bg-[#3d2a1a] p-2 rounded-lg flex items-center justify-center"
+    >
+      <img src="/static/icons/user.svg" alt="icono usuarios" class="w-7 h-7" />
+    </div>
+  </div>
+
+  <!-- Card 4 -->
+  <div
+    class="bg-white dark:bg-dark-card flex-1 min-w-[160px] sm:min-w-[200px] p-4 sm:p-6 rounded-lg shadow-sm dark:shadow-dark-border/20 flex justify-between items-start transition-colors"
+  >
+    <div class="flex flex-col">
+      <p class="text-sm text-gray-500 dark:text-dark-muted font-poppins">
+        Pagos Pendientes
+      </p>
+      <p
+        class="text-3xl font-bold font-display text-gray-900 dark:text-white py-2"
+      >
+        {{ pagos_pendientes }}
+      </p>
+    </div>
+    <div
+      class="bg-[#fdf5ef] dark:bg-[#3d2a1a] p-2 rounded-lg flex items-center justify-center"
+    >
+      <img src="/static/icons/reloj.svg" alt="icono reloj" class="w-7 h-7" />
+    </div>
+  </div>
+</div>
+<!-------------------------------------------------------------------------------------------------------------->
+<!----------------------------------------------GRAFICOS Y PAGOS RECIENTES--------------------------------------------->
+<div
+  class="flex flex-col lg:flex-row lg:justify-between p-4 sm:px-8 w-full gap-4"
+>
+  <div
+    class="p-6 sm:p-10 bg-white dark:bg-dark-card rounded-lg shadow-sm dark:shadow-dark-border/20 w-full lg:w-[48%] transition-colors"
+  >
+    <div>
+      <h3
+        class="text-xl font-poppins font-bold mb-9 text-gray-900 dark:text-white"
+      >
+        Ganancias Mensuales
+      </h3>
+    </div>
+    <div class="relative w-full h-64 sm:h-96">
+      <canvas id="gananciasChart" class="w-full h-full block"></canvas>
+    </div>
+  </div>
+  <div
+    class="p-6 sm:p-10 bg-white dark:bg-dark-card rounded-lg shadow-sm dark:shadow-dark-border/20 w-full lg:w-[48%] transition-colors"
+  >
+    <h3
+      class="text-xl font-poppins font-bold mb-9 text-gray-900 dark:text-white"
+    >
+      Pagos Recientes
+    </h3>
+    {% if Pagos|length == 0 %}
+    <div class="flex flex-col items-center justify-center py-8 text-center">
+      <img
+        src="/static/icons/reloj.svg"
+        alt="Sin pagos"
+        class="w-16 h-16 opacity-30 mb-4"
+      />
+      <p class="text-gray-500 dark:text-dark-muted font-poppins">
+        No hay pagos registrados
+      </p>
+    </div>
+    {% else %} {% for i in Pagos %} {% if i['puntual'] == 1 %}
+    <div
+      class="flex justify-between p-4 border border-gray-200 dark:border-dark-border rounded-lg gap-5 mb-4 items-center transition-colors"
+    >
+      <div class="flex items-center gap-4 min-w-0 flex-1">
+        <img
+          src="/static/icons/chec.svg"
+          class="bg-[#e7f5ec] dark:bg-[#1a3d2a] p-2 rounded-lg flex-shrink-0"
+        />
+        <div class="min-w-0">
+          <p
+            class="text-[17px] font-poppins font-semibold truncate text-gray-900 dark:text-white"
+          >
+            {{ i['nombre'] }}
+          </p>
+          <div class="flex flex-col sm:flex-row gap-1 sm:gap-2">
+            <p class="text-[15px] font-poppins font-semibold text-[#ee7c2b]">
+              Cuarto {{ i['cuarto']}}
+            </p>
+            <p
+              class="text-[15px] font-poppins text-gray-600 dark:text-dark-muted"
             >
-          </a>
-
-          <button
-            type="button"
-            data-drawer-hide="drawer-navigation"
-            aria-controls="drawer-navigation"
-            class="text-body bg-transparent hover:text-heading hover:bg-neutral-tertiary rounded-base w-9 h-9 absolute top-2.5 right-2.5 flex items-center justify-center"
-            aria-label="Cerrar menú"
-          >
-            <img src="/static/icons/close.svg" alt="Cerrar" />
-          </button>
-        </div>
-        <p class="text-[#ffffff] py-6 pb-2">Navegación</p>
-        <div class="py-3 pb-3 overflow-y-auto">
-          <ul class="space-y-2 font-medium">
-            <li>
-              <a
-                href=""
-                class="flex items-center px-2 py-1 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group"
-              >
-                <img src="/static/icons/home.svg" alt="" />
-                <span class="ml-3 text-[#ffffff]">Dashboard</span>
-              </a>
-            </li>
-          </ul>
+              {{i['fecha']}}
+            </p>
+          </div>
         </div>
       </div>
-      <div
-        id="drawer-overlay"
-        class="hidden fixed inset-0 bg-black bg-opacity-50 z-30"
-      ></div>
-    </header>
-    <main>
-      <div class="flex flex-col p-4 sm:px-8 w-full">
-        <h2 class="sm:text-[35px] text-[25px] font-poppins font-[900]">
-          Dashboard
-        </h2>
-        <p class="text-[#654640] sm:text-[16px] text-[12px] font-poppins">
-          Resumen general del sistema de alquileres
+      <div class="flex flex-col items-end">
+        <p
+          class="text-[17px] font-poppins font-bold flex-shrink-0 whitespace-nowrap text-gray-900 dark:text-white"
+        >
+          S/. {{ i['monto'] }}
         </p>
+        <span class="text-xs font-poppins text-gray-500 dark:text-gray-400 mt-1"
+          >{{ i['metodo_pago']|capitalize }}</span
+        >
       </div>
-      <div class="flex sm:flex-wrap flex-col sm:flex-row w-full gap-4 p-4">
-        <!-- Card 1 -->
-        <div
-          class="bg-white flex-1 min-w-[160px] sm:min-w-[200px] p-4 sm:p-6 rounded-lg shadow-sm flex justify-between items-center"
-        >
-          <div>
-            <p class="text-sm text-gray-500 font-poppins">Cuartos Ocupados</p>
-            <p class="text-3xl font-bold font-display text-gray-900 py-2">
-              12/15
+    </div>
+    {%else%}
+    <div
+      class="flex justify-between p-4 border border-gray-200 dark:border-dark-border rounded-lg gap-5 mb-4 items-center transition-colors"
+    >
+      <div class="flex items-center gap-4 min-w-0 flex-1">
+        <img
+          src="/static/icons/reloj.svg"
+          class="bg-[#fff6e4] dark:bg-[#3d3020] p-2 rounded-lg flex-shrink-0"
+        />
+        <div class="min-w-0">
+          <p
+            class="text-[17px] font-poppins font-semibold truncate text-gray-900 dark:text-white"
+          >
+            {{ i['nombre'] }}
+          </p>
+          <div class="flex flex-col sm:flex-row gap-1 sm:gap-2">
+            <p class="text-[15px] font-poppins font-semibold text-[#ee7c2b]">
+              Cuarto {{ i['cuarto']}}
             </p>
-          </div>
-          <div
-            class="bg-[#fdf5ef] p-2 rounded-lg flex items-center justify-center"
-          >
-            <img
-              src="/static/icons/cuartos.svg"
-              alt="icono cuartos"
-              class="w-7 h-7"
-            />
-          </div>
-        </div>
-
-        <!-- Card 2 -->
-        <div
-          class="bg-white flex-1 min-w-[160px] sm:min-w-[200px] p-4 sm:p-6 rounded-lg shadow-sm flex justify-between items-center"
-        >
-          <div>
-            <p class="text-sm text-gray-500 font-poppins">Ganancias del Mes</p>
-            <p class="text-3xl font-bold font-display text-gray-900 py-2">
-              S/.6,500
+            <p
+              class="text-[15px] font-poppins text-gray-600 dark:text-dark-muted"
+            >
+              {{i['fecha']}}
             </p>
-          </div>
-          <div
-            class="bg-[#fdf5ef] p-2 rounded-lg flex items-center justify-center"
-          >
-            <img
-              src="/static/icons/moneda.svg"
-              alt="icono dolar"
-              class="w-7 h-7"
-            />
-          </div>
-        </div>
-
-        <!-- Card 3 -->
-        <div
-          class="bg-white flex-1 min-w-[160px] sm:min-w-[200px] p-4 sm:p-6 rounded-lg shadow-sm flex justify-between items-center"
-        >
-          <div>
-            <p class="text-sm text-gray-500 font-poppins">Inquilinos Activos</p>
-            <p class="text-3xl font-bold font-display text-gray-900 py-2">12</p>
-          </div>
-          <div
-            class="bg-[#fdf5ef] p-2 rounded-lg flex items-center justify-center"
-          >
-            <img
-              src="/static/icons/user.svg"
-              alt="icono usuarios"
-              class="w-7 h-7"
-            />
-          </div>
-        </div>
-
-        <!-- Card 4 -->
-        <div
-          class="bg-white flex-1 min-w-[160px] sm:min-w-[200px] p-4 sm:p-6 rounded-lg shadow-sm flex justify-between items-center"
-        >
-          <div>
-            <p class="text-sm text-gray-500 font-poppins">Pagos Pendientes</p>
-            <p class="text-3xl font-bold font-display text-gray-900 py-2">2</p>
-          </div>
-          <div
-            class="bg-[#fdf5ef] p-2 rounded-lg flex items-center justify-center"
-          >
-            <img
-              src="/static/icons/reloj.svg"
-              alt="icono reloj"
-              class="w-7 h-7"
-            />
           </div>
         </div>
       </div>
-
-      <div
-        class="flex flex-col lg:flex-row lg:justify-between p-4 sm:px-8 w-full gap-4"
+      <div class="flex flex-col items-end">
+        <p
+          class="text-[17px] font-poppins font-bold flex-shrink-0 whitespace-nowrap text-gray-900 dark:text-white"
+        >
+          S/. {{ i['monto'] }}
+        </p>
+        <span class="text-xs font-poppins text-gray-500 dark:text-gray-400 mt-1"
+          >{{ i['metodo_pago']|capitalize }}</span
+        >
+      </div>
+    </div>
+    {% endif %} {% endfor %} {% endif %}
+  </div>
+</div>
+<!----------------------------------------------------------------------------------------------------->
+<!----------------------------------------------INQUILINOS ACTUALES--------------------------------------------->
+<div class="flex flex-wrap pt-4 pr-4 pb-10 pl-4 sm:px-8 w-full">
+  <div
+    class="p-6 sm:p-10 bg-white dark:bg-dark-card rounded-lg shadow-sm dark:shadow-dark-border/20 w-full lg:w-full transition-colors"
+  >
+    <div class="flex justify-between items-center my-5">
+      <p
+        class="font-poppins font-bold text-[17px] text-gray-900 dark:text-white"
       >
-        <div class="p-6 sm:p-10 bg-[#ffffff] rounded-lg w-full lg:w-[48%]">
-          <div>
-            <h3 class="text-xl font-poppins font-bold mb-9">
-              Ganancias Mensuales
-            </h3>
-          </div>
-          <div class="relative w-full h-64 sm:h-96">
-            <canvas id="gananciasChart" class="w-full h-full block"></canvas>
-          </div>
-        </div>
-        <div class="p-6 sm:p-10 bg-[#ffffff] rounded-lg w-full lg:w-[48%]">
-          <h3 class="text-xl font-poppins font-bold mb-9">Pagos Recientes</h3>
-          {% if inquilinos|length == 0 %}
-          <div
-            class="flex flex-col items-center justify-center py-8 text-center"
-          >
-            <img
-              src="/static/icons/reloj.svg"
-              alt="Sin pagos"
-              class="w-16 h-16 opacity-30 mb-4"
-            />
-            <p class="text-gray-500 font-poppins">No hay pagos registrados</p>
-          </div>
-          {% else %} {% for i in Pagos %} {% if i['puntual'] == 1 %}
-          <div
-            class="flex justify-between p-4 border rounded-lg gap-5 mb-4 items-center"
-          >
-            <div class="flex items-center gap-4 min-w-0">
+        Inquilinos Actuales
+      </p>
+      <div>
+        <div class="flex flex-wrap">
+          <div class="bg-white dark:bg-dark-card rounded-lg w-full lg:w-full">
+            <!-- Modal toggle -->
+            <button
+              data-modal-target="authentication-modal"
+              data-modal-toggle="authentication-modal"
+              class="flex p-2 bg-[#ef893f] hover:bg-[#ff9951] text-white gap-2 font-poppins text-[15px] rounded-lg transition-colors"
+            >
               <img
-                src="/static/icons/chec.svg"
-                class="bg-[#e7f5ec] p-2 rounded-lg"
-              />
-              <div>
-                <p class="text-[17px] font-poppins font-semibold truncate">
-                  {{ i['nombre'] }}
-                </p>
-                <div class="flex flex-col sm:flex-row gap-1 sm:gap-2">
-                  <p
-                    class="text-[15px] font-poppins font-semibold text-[#ee7c2b]"
-                  >
-                    Cuarto {{ i['cuarto']}}
-                  </p>
-                  <p class="text-[15px] font-poppins">
-                    {{i['fecha']|replace('-', '/')}}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <p class="text-[17px] font-poppins font-bold">
-              S/. {{ i['monto_mensual']}}
-            </p>
-          </div>
-          {%else%}
-          <div
-            class="flex justify-between p-4 border rounded-lg gap-5 mb-4 items-center"
-          >
-            <div class="flex items-center gap-4 min-w-0">
-              <img
-                src="/static/icons/reloj.svg"
-                class="bg-[#fff6e4] p-2 rounded-lg"
-              />
-              <div>
-                <p class="text-[17px] font-poppins font-semibold truncate">
-                  {{ i['nombre'] }}
-                </p>
-                <div class="flex flex-col sm:flex-row gap-1 sm:gap-2">
-                  <p
-                    class="text-[15px] font-poppins font-semibold text-[#ee7c2b]"
-                  >
-                    Cuarto {{ i['cuarto']}}
-                  </p>
-                  <p class="text-[15px] font-poppins">
-                    {{i['fecha']|replace('-', '/')}}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <p class="text-[17px] font-poppins font-bold">
-              S/. {{ i['monto_mensual']}}
-            </p>
-          </div>
-          {% endif %} {% endfor %} {% endif %}
-        </div>
-      </div>
-      <div class="flex flex-wrap pt-4 pr-4 pb-10 pl-4 sm:px-8 w-full">
-        <div class="p-6 sm:p-10 bg-[#ffffff] rounded-lg w-full lg:w-full">
-          <div class="flex justify-between items-center my-5">
-            <p class="font-poppins font-bold text-[17px]">
-              Inquilinos Actuales
-            </p>
-            <div>
-              <div class="flex flex-wrap">
-                <div class="bg-[#ffffff] rounded-lg w-full lg:w-full">
-                  <!-- Modal toggle -->
-                  <button
-                    data-modal-target="authentication-modal"
-                    data-modal-toggle="authentication-modal"
-                    class="flex p-2 bg-[#ef893f] text-[#ffffff] gap-2 font-poppins text-[15px] rounded-lg"
-                  >
-                    <img
-                      src="/static/icons/ag_user.svg"
-                      alt="agregar user"
-                      class="w-5 h-5"
-                    />Agregar
-                  </button>
+                src="/static/icons/ag_user.svg"
+                alt="agregar user"
+                class="w-5 h-5"
+              />Agregar
+            </button>
 
-                  <!-- Main modal -->
-                  <div
-                    id="authentication-modal"
-                    tabindex="-1"
-                    aria-hidden="true"
-                    class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full bg-[#333332a3]"
-                  >
-                    <div
-                      class="relative p-2 sm:p-4 w-full max-w-md mx-2 max-h-full"
-                    >
-                      <!-- Modal content -->
-                      <div
-                        class="relative bg-[#ffffff] border rounded-xl shadow-sm p-6 md:p-6"
+            <!-- Botón Cerrar sesión -->
+
+            <!-- Main modal -->
+            <div
+              id="authentication-modal"
+              tabindex="-1"
+              aria-hidden="true"
+              class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full bg-[#333332a3] dark:bg-[#000000bf]"
+            >
+              <div class="relative p-2 sm:p-4 w-full max-w-md mx-2 max-h-full">
+                <!-- Modal content -->
+                <div
+                  class="relative bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl shadow-sm p-6 md:p-6 transition-colors"
+                >
+                  <!-- Modal header -->
+                  <div class="flex items-center justify-between border-default">
+                    <div class="flex flex-col gap-2">
+                      <h3
+                        class="text-xl font-poppins font-bold text-gray-900 dark:text-white"
                       >
-                        <!-- Modal header -->
-                        <div
-                          class="flex items-center justify-between border-default"
+                        Agregar Nuevo Inquilino
+                      </h3>
+                      <p
+                        class="text-[13px] font-poppins text-gray-600 dark:text-dark-muted"
+                      >
+                        Completa la información del inquilino
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      data-modal-hide="authentication-modal"
+                      class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-border transition-colors"
+                    >
+                      <img
+                        src="/static/icons/close2.svg"
+                        alt="cerrar"
+                        class="dark:invert dark:opacity-80"
+                      />
+                    </button>
+                  </div>
+                  <!-- Modal body -->
+                  <form
+                    action="{{ url_for('agregar_inquilino') }}"
+                    method="POST"
+                    class="pt-2 md:pt-6"
+                  >
+                    {{ form.csrf_token }}
+                    <div class="flex flex-col gap-1 mb-4">
+                      <label
+                        for="nombre"
+                        class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
+                        >Nombre</label
+                      >
+                      <input
+                        type="text"
+                        id="nombre"
+                        name="nombre"
+                        class="border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors"
+                        placeholder="Nombre del inquilino "
+                        required
+                      />
+                    </div>
+                    <div class="flex flex-col gap-1 mb-4">
+                      <label
+                        for="apellido"
+                        class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
+                        >Apellido</label
+                      >
+                      <input
+                        type="text"
+                        id="apellido"
+                        name="apellido"
+                        class="border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors"
+                        placeholder="Apellido del inquilino "
+                        required
+                      />
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                      <div class="flex flex-col gap-1 mb-4 flex-1">
+                        <label
+                          for="dni"
+                          class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
+                          >DNI</label
                         >
-                          <div class="flex flex-col gap-2">
-                            <h3
-                              class="text-xl font-poppins font-bold text-heading"
-                            >
-                              Agregar Nuevo Inquilino
-                            </h3>
-                            <p class="text-[13px] font-poppins text-heading">
-                              Completa la información del inquilino
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            data-modal-hide="authentication-modal"
-                          >
-                            <img src="/static/icons/close2.svg" alt="cerrar" />
-                          </button>
-                        </div>
-                        <!-- Modal body -->
-                        <form
-                          action="{{ url_for('agregar_inquilino') }}"
-                          method="POST"
-                          class="pt-2 md:pt-6"
+                        <input
+                          type="text"
+                          id="dni"
+                          name="dni"
+                          class="border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg w-full placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors"
+                          placeholder="DNI"
+                          required
+                        />
+                      </div>
+                      <div class="flex flex-col gap-1 mb-4 flex-1">
+                        <label
+                          for="telefono"
+                          class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
+                          >Telefono</label
                         >
-                          <div class="flex flex-col gap-1 mb-4">
-                            <label
-                              for="nombre"
-                              class="font-poppins font-semibold text-[14px]"
-                              >Nombre completo</label
-                            >
-                            <input
-                              type="text"
-                              id="nombre"
-                              name="nombre"
-                              class="border-[#d1d5db] rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white placeholder:text-gray-400 text-sm"
-                              placeholder="Nombre del inquilino "
-                              required
-                            />
-                          </div>
-                          <div class="flex flex-col sm:flex-row gap-2">
-                            <div class="flex flex-col gap-1 mb-4 flex-1">
-                              <label
-                                for="dni"
-                                class="font-poppins font-semibold text-[14px]"
-                                >DNI</label
-                              >
-                              <input
-                                type="text"
-                                id="dni"
-                                name="dni"
-                                class="border-[#d1d5db] rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white w-full placeholder:text-gray-400 text-sm"
-                                placeholder="DNI"
-                                required
-                              />
-                            </div>
-                            <div class="flex flex-col gap-1 mb-4 flex-1">
-                              <label
-                                for="telefono"
-                                class="font-poppins font-semibold text-[14px]"
-                                >Telefono</label
-                              >
-                              <input
-                                type="text"
-                                id="telefono"
-                                name="telefono"
-                                class="border-[#d1d5db] rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white w-full placeholder:text-gray-400 text-sm"
-                                placeholder="975279174"
-                                required
-                              />
-                            </div>
-                          </div>
-                          <div class="flex flex-col gap-1 mb-4">
-                            <label
-                              for="fecha_inicio"
-                              class="font-poppins font-semibold text-[14px]"
-                              >Fecha de inicio</label
-                            >
-                            <input
-                              type="date"
-                              id="fecha_inicio"
-                              name="fecha_inicio"
-                              class="border-[#d1d5db] rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white w-full placeholder:text-gray-400 text-sm"
-                              placeholder="Fecha de inicio"
-                              required
-                            />
-                          </div>
-
-                          <div class="flex flex-col sm:flex-row gap-2">
-                            <div class="flex flex-col gap-1 mb-4 flex-1">
-                              <label
-                                for="cuarto"
-                                class="font-poppins font-semibold text-[14px]"
-                                >Cuarto</label
-                              >
-                              <input
-                                type="text"
-                                id="cuarto"
-                                name="cuarto"
-                                class="border-[#d1d5db] rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white w-full placeholder:text-gray-400 text-sm"
-                                placeholder="A-101"
-                                required
-                              />
-                            </div>
-                            <div class="flex flex-col gap-1 mb-4 flex-1">
-                              <label
-                                for="renta_mensual"
-                                class="font-poppins font-semibold text-[14px]"
-                                >Renta mensual</label
-                              >
-                              <input
-                                type="text"
-                                id="renta_mensual"
-                                name="renta_mensual"
-                                class="border-[#d1d5db] rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white w-full placeholder:text-gray-400 text-sm"
-                                placeholder="S/.100"
-                                required
-                              />
-                            </div>
-                          </div>
-
-                          <div class="flex justify-center">
-                            <button
-                              type="submit"
-                              class="p-2 h-12 w-full sm:w-40 m-2 bg-[#ef893f] rounded-lg text-[#ffffff] font-semibold border-none hover:bg-[#ff9951] transition-all duration-300 ease-in-out"
-                            >
-                              Guardar
-                            </button>
-                            <button
-                              type="button"
-                              data-modal-hide="authentication-modal"
-                              class="p-2 h-12 w-full sm:w-40 m-2 bg-[#ffffff] border-2 border-[#f0edeb] rounded-lg text-[#000000] font-semibold hover:bg-[#ef893f] hover:text-[#ffffff] hover:border-none transition-all duration-300"
-                            >
-                              Cancelar
-                            </button>
-                          </div>
-                        </form>
+                        <input
+                          type="text"
+                          id="telefono"
+                          name="telefono"
+                          class="border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg w-full placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors"
+                          placeholder="975279174"
+                          required
+                        />
                       </div>
                     </div>
+                    <div class="flex flex-col gap-1 mb-4">
+                      <label
+                        for="fecha_inicio"
+                        class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
+                        >Fecha de inicio</label
+                      >
+                      <input
+                        type="date"
+                        id="fecha_inicio"
+                        name="fecha_inicio"
+                        class="border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg w-full placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors"
+                        placeholder="Fecha de inicio"
+                        required
+                      />
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-2">
+                      <div class="flex flex-col gap-1 mb-4 flex-1">
+                        <label
+                          for="cuarto"
+                          class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
+                          >Cuarto</label
+                        >
+                        <select
+                          id="cuarto"
+                          name="cuarto"
+                          required
+                          class="border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg w-full text-sm transition-colors"
+                        >
+                          {% if cuartos_disponibles|length > 0 %}
+                          <option value="" data-precio="0">
+                            Seleccionar cuarto
+                          </option>
+                          {% for cuarto in cuartos_disponibles %}
+                          <option
+                            value="{{ cuarto[1] }}"
+                            data-precio="{{ cuarto[3] }}"
+                          >
+                            {{ cuarto[1] }} - Piso {{ cuarto[2] }} (S/{{
+                            "%.2f"|format(cuarto[3]) }})
+                          </option>
+                          {% endfor %} {% else %}
+                          <option value="" data-precio="0">
+                            No hay cuartos disponibles
+                          </option>
+                          {% endif %}
+                        </select>
+                      </div>
+                      <div class="flex flex-col gap-1 flex-1">
+                        <label
+                          for="renta_mensual"
+                          class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
+                          >Renta mensual</label
+                        >
+                        <input
+                          type="number"
+                          id="renta_mensual"
+                          name="renta_mensual"
+                          min="0.01"
+                          step="0.01"
+                          readonly
+                          class="border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg w-full placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors bg-gray-100 dark:bg-[#1a1410]"
+                          placeholder="S/.100"
+                          required
+                        />
+                        <script>
+                          document.addEventListener(
+                            'DOMContentLoaded',
+                            function () {
+                              const selectCuarto =
+                                document.getElementById('cuarto');
+                              const inputRenta =
+                                document.getElementById('renta_mensual');
+                              if (selectCuarto && inputRenta) {
+                                selectCuarto.addEventListener(
+                                  'change',
+                                  function () {
+                                    const selected =
+                                      selectCuarto.options[
+                                        selectCuarto.selectedIndex
+                                      ];
+                                    const precio =
+                                      selected.getAttribute('data-precio');
+                                    inputRenta.value = precio
+                                      ? parseFloat(precio).toFixed(2)
+                                      : '';
+                                  }
+                                );
+                              }
+                            }
+                          );
+                        </script>
+                      </div>
+                    </div>
+                    <div class="my-4">
+                      <input
+                        type="checkbox"
+                        id="ya_pago"
+                        name="ya_pago"
+                        value="1"
+                        class="text-[#ef893f] bg-white dark:bg-dark-bg border-2 border-gray-400 dark:border-dark-border rounded focus:ring-[#ef893f] cursor-pointer"
+                      />
+                      <label
+                        for="ya_pago"
+                        class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
+                      >
+                        El inquilino ya pagó el mes actual
+                      </label>
+                    </div>
+
+                    <div class="flex justify-center">
+                      <button
+                        type="submit"
+                        class="p-2 h-12 w-full sm:w-40 m-2 bg-[#ef893f] rounded-lg text-white font-semibold border-none hover:bg-[#ff9951] transition-all duration-300 ease-in-out"
+                      >
+                        Guardar
+                      </button>
+                      <button
+                        type="button"
+                        data-modal-hide="authentication-modal"
+                        class="p-2 h-12 w-full sm:w-40 m-2 bg-white dark:bg-dark-bg border-2 border-gray-200 dark:border-dark-border rounded-lg text-gray-900 dark:text-white font-semibold hover:bg-[#ef893f] hover:text-white hover:border-transparent transition-all duration-300"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="inquilinos-scroll" style="max-height: 420px; overflow-y: auto">
+      {% if inquilinos|length == 0 %}
+      <div class="flex flex-col items-center justify-center py-12 text-center">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-16 h-16 text-gray-400 dark:text-gray-600 mb-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+          />
+        </svg>
+        <p class="text-gray-500 dark:text-gray-400 text-base font-poppins">
+          No hay inquilinos registrados
+        </p>
+      </div>
+      {% else %} {% for p in inquilinos %}
+      <div
+        class="flex justify-between items-center border border-gray-200 dark:border-dark-border p-4 my-4 rounded-lg w-full gap-2 transition-colors"
+      >
+        <div class="flex flex-col gap-2 min-w-0 flex-1">
+          <div class="flex gap-2 items-center">
+            <p
+              class="font-poppins text-[15px] font-semibold truncate text-gray-900 dark:text-white"
+            >
+              {{ p['nombre'] }} {{ p['apellido'] }}
+            </p>
+            <div class="flex-shrink-0">
+              {% if p['estado_pago'] == 'Pagado' %}
+              <p
+                class="font-poppins px-3 py-1 rounded-3xl bg-[#16a249] text-[11px] font-semibold text-white whitespace-nowrap"
+              >
+                {{ p['estado_pago'] }}
+              </p>
+              {% elif p['estado_pago'] == 'Atrasado' %}
+              <p
+                class="font-poppins px-3 py-1 rounded-3xl bg-red-500 text-[11px] font-semibold text-white whitespace-nowrap"
+              >
+                {{ p['estado_pago'] }}
+              </p>
+              {% else %}
+              <p
+                class="font-poppins px-3 py-1 rounded-3xl bg-[#ef893f] text-[11px] font-semibold text-white whitespace-nowrap"
+              >
+                {{ p['estado_pago'] }}
+              </p>
+              {% endif %}
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <div class="flex sm:flex-row flex-col gap-1">
+              <p class="font-poppins font-medium text-[14px] text-[#ef7c2b]">
+                Cuarto
+              </p>
+              <p class="font-poppins font-medium text-[14px] text-[#ef7c2b]">
+                {{ p['cuarto'] }}
+              </p>
+            </div>
+            <div class="flex sm:flex-row flex-col gap-1">
+              <p
+                class="font-poppins text-[14px] text-[#8a8175] dark:text-dark-muted"
+              >
+                Inicio:
+              </p>
+              <p
+                class="font-poppins text-[14px] text-[#8a8175] dark:text-dark-muted"
+              >
+                {{ p['fecha_ingreso'] }}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div
+          class="flex gap-3 sm:gap-4 p-2 flex-shrink-0 flex-grow-0 min-w-[100px]"
+        >
+          <!-- Botón Editar -->
+          <button
+            data-modal-target="editar-modal-{{ p['id'] }}"
+            data-modal-toggle="editar-modal-{{ p['id'] }}"
+            class="p-2 hover:bg-gray-100 dark:hover:bg-dark-border rounded-lg transition-colors flex-shrink-0"
+            aria-label="Editar inquilino"
+          >
+            <img
+              src="/static/icons/editar.svg"
+              alt=""
+              class="w-5 h-5 sm:w-6 sm:h-6 dark:invert dark:opacity-80"
+            />
+          </button>
+          <!-- Botón Eliminar -->
+          <button
+            data-modal-target="eliminar-modal-{{ p['id'] }}"
+            data-modal-toggle="eliminar-modal-{{ p['id'] }}"
+            class="p-2 hover:bg-gray-100 dark:hover:bg-dark-border rounded-lg transition-colors flex-shrink-0"
+            aria-label="Eliminar inquilino"
+          >
+            <img
+              src="/static/icons/borrar.svg"
+              alt=""
+              class="w-5 h-5 sm:w-6 sm:h-6"
+            />
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Editar Inquilino -->
+      <div
+        id="editar-modal-{{ p['id'] }}"
+        tabindex="-1"
+        aria-hidden="true"
+        class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full bg-[#333332a3] dark:bg-[#000000bf]"
+      >
+        <div class="relative p-2 sm:p-4 w-full max-w-md mx-2 max-h-full">
+          <div
+            class="relative bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl shadow-sm p-6 md:p-6 transition-colors"
+          >
+            <div class="flex items-center justify-between border-default">
+              <div class="flex flex-col gap-2">
+                <h3
+                  class="text-xl font-poppins font-bold text-gray-900 dark:text-white"
+                >
+                  Editar Inquilino
+                </h3>
+                <p
+                  class="text-[13px] font-poppins text-gray-600 dark:text-dark-muted"
+                >
+                  Modifica la información del inquilino
+                </p>
+              </div>
+              <button
+                type="button"
+                data-modal-hide="editar-modal-{{ p['id'] }}"
+                class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-border transition-colors"
+              >
+                <img
+                  src="/static/icons/close2.svg"
+                  alt="cerrar"
+                  class="dark:invert dark:opacity-80"
+                />
+              </button>
+            </div>
+            <form
+              action="{{ url_for('editar_inquilino', id=p['id']) }}"
+              method="POST"
+              class="pt-2 md:pt-6"
+            >
+              {{ form.csrf_token }}
+              <div class="flex flex-col gap-1 mb-4">
+                <label
+                  for="nombre_edit_{{ p['id'] }}"
+                  class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
+                  >Nombre</label
+                >
+                <input
+                  type="text"
+                  id="nombre_edit_{{ p['id'] }}"
+                  name="nombre"
+                  value="{{ p['nombre'] }}"
+                  class="border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors"
+                  required
+                />
+              </div>
+              <div class="flex flex-col gap-1 mb-4">
+                <label
+                  for="apellido_edit_{{ p['id'] }}"
+                  class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
+                  >Apellido</label
+                >
+                <input
+                  type="text"
+                  id="apellido_edit_{{ p['id'] }}"
+                  name="apellido"
+                  value="{{ p['apellido'] }}"
+                  class="border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors"
+                  required
+                />
+              </div>
+              <div class="flex flex-col sm:flex-row gap-2">
+                <div class="flex flex-col gap-1 mb-4 flex-1">
+                  <label
+                    for="dni_edit_{{ p['id'] }}"
+                    class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
+                    >DNI</label
+                  >
+                  <input
+                    type="text"
+                    id="dni_edit_{{ p['id'] }}"
+                    name="dni"
+                    value="{{ p['dni'] }}"
+                    class="border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg w-full placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors"
+                    required
+                  />
+                </div>
+                <div class="flex flex-col gap-1 mb-4 flex-1">
+                  <label
+                    for="telefono_edit_{{ p['id'] }}"
+                    class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
+                    >Teléfono</label
+                  >
+                  <input
+                    type="text"
+                    id="telefono_edit_{{ p['id'] }}"
+                    name="telefono"
+                    value="{{ p['telefono'] }}"
+                    class="border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg w-full placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="flex flex-col gap-1 mb-4">
+                <label
+                  for="fecha_inicio_edit_{{ p['id'] }}"
+                  class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
+                  >Fecha de inicio</label
+                >
+                <input
+                  type="date"
+                  id="fecha_inicio_edit_{{ p['id'] }}"
+                  name="fecha_inicio"
+                  value="{{ p['fecha_ingreso'] }}"
+                  class="border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg w-full placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors"
+                  required
+                />
+              </div>
+              <div class="flex flex-col sm:flex-row gap-2">
+                <div class="flex flex-col gap-1 mb-4 flex-1">
+                  <label
+                    for="cuarto_edit_{{ p['id'] }}"
+                    class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
+                    >Cuarto</label
+                  >
+                  <input
+                    type="text"
+                    id="cuarto_edit_{{ p['id'] }}"
+                    name="cuarto"
+                    value="{{ p['cuarto'] }}"
+                    class="border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg w-full placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors"
+                    required
+                  />
+                </div>
+                <div class="flex flex-col gap-1 flex-1">
+                  <label
+                    for="renta_mensual_edit_{{ p['id'] }}"
+                    class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
+                    >Renta mensual</label
+                  >
+                  <input
+                    type="text"
+                    id="renta_mensual_edit_{{ p['id'] }}"
+                    name="renta_mensual"
+                    value="{{ p['monto_mensual'] }}"
+                    class="border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg w-full placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="flex justify-center mt-4">
+                <button
+                  type="submit"
+                  class="p-2 h-12 w-full sm:w-40 m-2 bg-[#ef893f] rounded-lg text-white font-semibold border-none hover:bg-[#ff9951] transition-all duration-300 ease-in-out"
+                >
+                  Guardar
+                </button>
+                <button
+                  type="button"
+                  data-modal-hide="editar-modal-{{ p['id'] }}"
+                  class="p-2 h-12 w-full sm:w-40 m-2 bg-white dark:bg-dark-bg border-2 border-gray-200 dark:border-dark-border rounded-lg text-gray-900 dark:text-white font-semibold hover:bg-[#ef893f] hover:text-white hover:border-transparent transition-all duration-300"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Eliminar Inquilino -->
+      <div
+        id="eliminar-modal-{{ p['id'] }}"
+        tabindex="-1"
+        aria-hidden="true"
+        class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full bg-[#333332a3] dark:bg-[#000000bf]"
+      >
+        <div class="relative p-2 sm:p-4 w-full max-w-md mx-2 max-h-full">
+          <div
+            class="relative bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl shadow-sm p-6 md:p-6 transition-colors"
+          >
+            <div class="flex items-center justify-between border-default">
+              <div class="flex flex-col gap-2">
+                <h3
+                  class="text-xl font-poppins font-bold text-gray-900 dark:text-white"
+                >
+                  Eliminar Inquilino
+                </h3>
+                <p
+                  class="text-[13px] font-poppins text-gray-600 dark:text-dark-muted"
+                >
+                  ¿Estás seguro de eliminar a este inquilino?
+                </p>
+              </div>
+              <button
+                type="button"
+                data-modal-hide="eliminar-modal-{{ p['id'] }}"
+                class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-border transition-colors"
+              >
+                <img
+                  src="/static/icons/close2.svg"
+                  alt="cerrar"
+                  class="dark:invert dark:opacity-80"
+                />
+              </button>
+            </div>
+            <div class="pt-4 md:pt-6">
+              <div
+                class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4"
+              >
+                <div class="flex items-center gap-3">
+                  <svg
+                    class="w-6 h-6 text-red-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    ></path>
+                  </svg>
+                  <div>
+                    <p
+                      class="font-poppins font-semibold text-red-700 dark:text-red-400"
+                    >
+                      {{ p['nombre'] }} {{ p['apellido'] }}
+                    </p>
+                    <p
+                      class="font-poppins text-sm text-red-600 dark:text-red-300"
+                    >
+                      Cuarto {{ p['cuarto'] }}
+                    </p>
                   </div>
                 </div>
               </div>
+              <p
+                class="font-poppins text-sm text-gray-600 dark:text-dark-muted mb-4"
+              >
+                Esta acción eliminará permanentemente al inquilino y todos sus
+                pagos registrados. El cuarto quedará disponible.
+              </p>
+              <form
+                action="{{ url_for('eliminar_inquilino', id=p['id']) }}"
+                method="POST"
+              >
+                {{ form.csrf_token }}
+                <div class="flex justify-center">
+                  <button
+                    type="submit"
+                    class="p-2 h-12 w-full sm:w-40 m-2 bg-red-500 rounded-lg text-white font-semibold border-none hover:bg-red-600 transition-all duration-300 ease-in-out"
+                  >
+                    Eliminar
+                  </button>
+                  <button
+                    type="button"
+                    data-modal-hide="eliminar-modal-{{ p['id'] }}"
+                    class="p-2 h-12 w-full sm:w-40 m-2 bg-white dark:bg-dark-bg border-2 border-gray-200 dark:border-dark-border rounded-lg text-gray-900 dark:text-white font-semibold hover:bg-gray-100 dark:hover:bg-dark-border transition-all duration-300"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
-          {% for p in inquilinos %}
-          <div
-            class="flex justify-between items-center border p-4 my-4 rounded-lg w-full"
-          >
-            <div class="flex flex-col gap-2">
-              <div class="flex gap-2">
-                <p class="font-poppins text-[15px] font-semibold">
-                  {{ p['nombre'] }}
-                </p>
-                <div>
-                  {% if p['estado_pago'] == 'Pagado' %}
-                  <p
-                    class="font-poppins px-3 py-1 rounded-3xl bg-[#16a249] text-[11px] font-semibold text-[#ffffff]"
-                  >
-                    {{ p['estado_pago'] }}
-                  </p>
-                  {% else %}
-                  <p
-                    class="font-poppins px-3 py-1 rounded-3xl bg-[#ef893f] text-[11px] font-semibold text-[#ffffff]"
-                  >
-                    {{ p['estado_pago'] }}
-                  </p>
-                  {% endif %}
-                </div>
-              </div>
-              <div class="flex gap-3">
-                <div class="flex sm:flex-row flex-col gap-1">
-                  <p
-                    class="font-poppins font-medium text-[14px] text-[#ef7c2b]"
-                  >
-                    Cuarto
-                  </p>
-                  <p
-                    class="font-poppins font-medium text-[14px] text-[#ef7c2b]"
-                  >
-                    {{ p['cuarto'] }}
-                  </p>
-                </div>
-                <div class="flex sm:flex-row flex-col gap-1">
-                  <p class="font-poppins text-[14px] text-[#8a8175]">Inicio:</p>
-                  <p class="font-poppins text-[14px] text-[#8a8175]">
-                    {{ p['fecha_ingreso'] }}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="flex gap-3 sm:gap-4 p-2">
-              <button
-                class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                aria-label="Editar inquilino"
-              >
-                <img
-                  src="/static/icons/editar.svg"
-                  alt=""
-                  class="w-5 h-5 sm:w-6 sm:h-6"
-                />
-              </button>
-              <button
-                class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                aria-label="Eliminar inquilino"
-              >
-                <img
-                  src="/static/icons/borrar.svg"
-                  alt=""
-                  class="w-5 h-5 sm:w-6 sm:h-6"
-                />
-              </button>
-            </div>
-          </div>
-          {% endfor %}
         </div>
       </div>
-    </main>
-    <!-------------------------------------------------------------------------------------------------------->
+      {% endfor %} {% endif %}
+    </div>
+  </div>
+</div>
+<!----------------------------------------------------------------------------------------------------->
+{% endblock %} {% block scripts %}
+<script id="chart-data" type="application/json">
+  {{ {'meses': meses, 'ganancias': ganancias} | tojson }}
+</script>
 
-    <script id="chart-data" type="application/json">
-      {{ {'meses': meses, 'ganancias': ganancias} | tojson }}
-    </script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const chartDataEl = document.getElementById('chart-data');
+    const serverData = chartDataEl
+      ? JSON.parse(chartDataEl.textContent)
+      : { meses: [], ganancias: [] };
 
-    <script>
-      // Script para controlar el overlay en móvil cuando se abre/cierra el drawer
-      (function () {
-        const overlay = document.getElementById('drawer-overlay');
-        const drawer = document.getElementById('drawer-navigation');
+    const meses = serverData.meses;
+    const ganancias = serverData.ganancias;
 
-        if (!overlay || !drawer) return;
+    // Nombres de meses en español
+    const MONTH_NAMES = [
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre',
+    ];
 
-        // Mostrar overlay cuando se hace click en cualquier botón que abra el drawer
-        document.querySelectorAll('[data-drawer-show]').forEach((btn) => {
-          btn.addEventListener('click', function () {
-            overlay.classList.remove('hidden');
-            // Abrir drawer (quitar clase que lo oculta)
-            drawer.classList.remove('-translate-x-full');
-          });
-        });
+    // Convierte una etiqueta de mes a nombre de mes
+    function monthLabelToName(label) {
+      if (!label && label !== 0) return '';
+      const str = String(label);
+      const dashMatch =
+        str.match(/-(\d{1,2})(?:-|$)/) || str.match(/^(\d{4})-(\d{1,2})$/);
+      if (dashMatch) {
+        const monthNum = parseInt(dashMatch[dashMatch.length - 1], 10);
+        if (!isNaN(monthNum) && monthNum >= 1 && monthNum <= 12)
+          return MONTH_NAMES[monthNum - 1];
+      }
+      const num = parseInt(str, 10);
+      if (!isNaN(num) && num >= 1 && num <= 12) return MONTH_NAMES[num - 1];
+      const lower = str.toLowerCase();
+      for (let i = 0; i < MONTH_NAMES.length; i++) {
+        if (
+          MONTH_NAMES[i].toLowerCase().startsWith(lower) ||
+          lower.startsWith(MONTH_NAMES[i].toLowerCase().slice(0, 3))
+        )
+          return MONTH_NAMES[i];
+      }
+      return str;
+    }
 
-        // Ocultar overlay cuando se hace click en cualquier botón que cierre el drawer
-        document.querySelectorAll('[data-drawer-hide]').forEach((btn) => {
-          btn.addEventListener('click', function () {
-            overlay.classList.add('hidden');
-            drawer.classList.add('-translate-x-full');
-          });
-        });
+    const displayLabels = meses.map((m) => monthLabelToName(m));
 
-        // Cerrar drawer al hacer click en el overlay
-        overlay.addEventListener('click', function () {
-          drawer.classList.add('-translate-x-full');
-          overlay.classList.add('hidden');
-        });
+    const canvas = document.getElementById('gananciasChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
 
-        // Al redimensionar, cerrar overlay y drawer por defecto
-        window.addEventListener('resize', function () {
-          overlay.classList.add('hidden');
-          drawer.classList.add('-translate-x-full');
-        });
-      })();
-    </script>
+    // Detectar modo oscuro para adaptar colores del gráfico
+    function isDarkMode() {
+      return document.documentElement.classList.contains('dark');
+    }
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        const chartDataEl = document.getElementById('chart-data');
-        const serverData = chartDataEl
-          ? JSON.parse(chartDataEl.textContent)
-          : { meses: [], ganancias: [] };
+    function getChartColors() {
+      const dark = isDarkMode();
+      return {
+        textColor: dark ? '#e5e5e5' : '#374151',
+        gridColor: dark ? '#2a2a2a' : '#e5e7eb',
+        tooltipBg: dark ? '#1a1a1a' : '#ffffff',
+        tooltipText: dark ? '#e5e5e5' : '#374151',
+      };
+    }
 
-        const meses = serverData.meses;
-        const ganancias = serverData.ganancias;
+    let colors = getChartColors();
 
-        // Nombres de meses en español
-        const MONTH_NAMES = [
-          'Enero',
-          'Febrero',
-          'Marzo',
-          'Abril',
-          'Mayo',
-          'Junio',
-          'Julio',
-          'Agosto',
-          'Septiembre',
-          'Octubre',
-          'Noviembre',
-          'Diciembre',
-        ];
+    const gananciasChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: displayLabels,
+        datasets: [
+          {
+            label: 'Total de ganancias por mes',
+            data: ganancias,
+            backgroundColor: '#ee7c2b',
+            borderWidth: 1,
+            borderRadius: 15,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { color: colors.textColor },
+            grid: { color: colors.gridColor },
+          },
+          x: {
+            ticks: { color: colors.textColor },
+            grid: { color: colors.gridColor },
+          },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: colors.tooltipBg,
+            titleColor: colors.tooltipText,
+            bodyColor: colors.tooltipText,
+            borderColor: colors.gridColor,
+            borderWidth: 1,
+            callbacks: {
+              title: function (tooltipItems) {
+                if (!tooltipItems || !tooltipItems.length) return '';
+                return tooltipItems[0].label || '';
+              },
+              label: function (context) {
+                const value = context.formattedValue || context.raw || 0;
+                return 'Total: ' + value;
+              },
+            },
+          },
+        },
+      },
+    });
 
-        // Convierte una etiqueta de mes (p. ej. '2025-11' o '11' o '2025-11-01') a nombre de mes
-        function monthLabelToName(label) {
-          if (!label && label !== 0) return '';
-          const str = String(label);
-          // buscar patrón YYYY-MM o YYYY-M
-          const dashMatch =
-            str.match(/-(\d{1,2})(?:-|$)/) || str.match(/^(\d{4})-(\d{1,2})$/);
-          if (dashMatch) {
-            // toma el último grupo de dígitos de mes
-            const monthNum = parseInt(dashMatch[dashMatch.length - 1], 10);
-            if (!isNaN(monthNum) && monthNum >= 1 && monthNum <= 12)
-              return MONTH_NAMES[monthNum - 1];
-          }
-          // si la etiqueta es solo número de mes (1-12)
-          const num = parseInt(str, 10);
-          if (!isNaN(num) && num >= 1 && num <= 12) return MONTH_NAMES[num - 1];
-          // si ya es texto (p. ej. 'Nov') intentar mapear por inicio
-          const lower = str.toLowerCase();
-          for (let i = 0; i < MONTH_NAMES.length; i++) {
-            if (
-              MONTH_NAMES[i].toLowerCase().startsWith(lower) ||
-              lower.startsWith(MONTH_NAMES[i].toLowerCase().slice(0, 3))
-            )
-              return MONTH_NAMES[i];
-          }
-          // fallback: devolver la etiqueta tal cual
-          return str;
+    // Actualizar colores del gráfico cuando cambia el tema
+    const observer = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        if (mutation.attributeName === 'class') {
+          colors = getChartColors();
+          gananciasChart.options.scales.y.ticks.color = colors.textColor;
+          gananciasChart.options.scales.y.grid.color = colors.gridColor;
+          gananciasChart.options.scales.x.ticks.color = colors.textColor;
+          gananciasChart.options.scales.x.grid.color = colors.gridColor;
+          gananciasChart.options.plugins.tooltip.backgroundColor =
+            colors.tooltipBg;
+          gananciasChart.options.plugins.tooltip.titleColor =
+            colors.tooltipText;
+          gananciasChart.options.plugins.tooltip.bodyColor = colors.tooltipText;
+          gananciasChart.options.plugins.tooltip.borderColor = colors.gridColor;
+          gananciasChart.update('none');
         }
-
-        // Etiquetas que se mostrarán en el eje: convertimos las etiquetas del servidor a nombres
-        const displayLabels = meses.map((m) => monthLabelToName(m));
-
-        const canvas = document.getElementById('gananciasChart');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-
-        const gananciasChart = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: displayLabels,
-            datasets: [
-              {
-                label: 'Total de ganancias por mes',
-                data: ganancias,
-                backgroundColor: '#ee7c2b',
-                borderWidth: 1,
-                borderRadius: 15,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              y: { beginAtZero: true },
-            },
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                callbacks: {
-                  // Mostrar solo el nombre del mes en el tooltip (sin año)
-                  title: function (tooltipItems) {
-                    if (!tooltipItems || !tooltipItems.length) return '';
-                    return tooltipItems[0].label || '';
-                  },
-                  // Label del valor (ej. "Total: 123")
-                  label: function (context) {
-                    const value = context.formattedValue || context.raw || 0;
-                    return 'Total: ' + value;
-                  },
-                },
-              },
-            },
-          },
-        });
-
-        // Mostrar nombre del mes al hacer clic en una barra
-        const selectedEl = document.getElementById('selected-month');
-        canvas.addEventListener('click', function (evt) {
-          const points = gananciasChart.getElementsAtEventForMode(
-            evt,
-            'nearest',
-            { intersect: true },
-            true
-          );
-          if (points.length) {
-            const firstPoint = points[0];
-            const label = gananciasChart.data.labels[firstPoint.index];
-            if (selectedEl)
-              selectedEl.textContent = 'Mes seleccionado: ' + label;
-          }
-        });
       });
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js"></script>
-  </body>
-</html>
+    });
+
+    observer.observe(document.documentElement, { attributes: true });
+
+    // Mostrar nombre del mes al hacer clic en una barra
+    const selectedEl = document.getElementById('selected-month');
+    canvas.addEventListener('click', function (evt) {
+      const points = gananciasChart.getElementsAtEventForMode(
+        evt,
+        'nearest',
+        { intersect: true },
+        true
+      );
+      if (points.length) {
+        const firstPoint = points[0];
+        const label = gananciasChart.data.labels[firstPoint.index];
+        if (selectedEl) selectedEl.textContent = 'Mes seleccionado: ' + label;
+      }
+    });
+  });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const fechaInicioInput = document.getElementById('fecha_inicio');
+    if (fechaInicioInput) {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+      fechaInicioInput.value = formattedDate;
+    }
+  });
+</script>
+{% endblock %}

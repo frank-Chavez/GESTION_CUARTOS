@@ -1,0 +1,26 @@
+{
+  "name": "Sistema Gestión Cuartos",
+  "short_name": "Cuartos",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#231a15",
+  "theme_color": "#ef893f",
+  "description": "Gestión de cuartos e inquilinos",
+  "icons": [
+    {
+      "src": "/static/img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/img/acceso_directo.ico",
+      "sizes": "256x256",
+      "type": "image/x-icon"
+    }
+  ]
+}

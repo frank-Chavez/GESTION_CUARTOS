@@ -1,0 +1,781 @@
+{% extends "base.html" %} {% block title %}Configuración - Sistema{% endblock %}
+{% block content %}
+<div class="p-4 sm:px-8 w-full">
+  <div class="max-w-7xl mx-auto">
+    <h2
+      class="sm:text-[35px] text-[25px] font-poppins font-[900] text-gray-900 dark:text-white"
+    >
+      Configuración
+    </h2>
+    <p
+      class="text-[#654640] dark:text-dark-muted sm:text-[16px] text-[12px] font-poppins"
+    >
+      Ajustes del sistema
+    </p>
+
+    <div
+      class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-8 items-start"
+    >
+      <!-- Perfil -->
+        {% if usuario %}
+        <form
+          id="perfil-form"
+          action="{{ url_for('config.editar_perfil') }}"
+          method="post"
+          class="w-full"
+        >
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div class="w-full bg-dark-card rounded-xl shadow-lg p-6 text-white">
+            <style>
+              /* Estilos para inputs del perfil - look según mock */
+              .profile-input {
+                transition: border-color 0.18s ease, box-shadow 0.18s ease,
+                  transform 0.12s ease;
+                border-radius: 0.625rem;
+                padding: 0.75rem 1rem;
+                background: inherit;
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+                color: #fff;
+                font-size: 0.95rem;
+              }
+              .profile-input:focus {
+                outline: none;
+                border-color: rgba(239, 137, 63, 1) !important;
+                box-shadow: inset 0 0 0 2px rgba(239, 137, 63, 0.18),
+                  0 0 0 6px rgba(239, 137, 63, 0.06);
+                transform: translateY(-0.5px);
+              }
+              .profile-input::placeholder {
+                color: #bfae9f;
+                opacity: 0.9;
+              }
+              .profile-input:hover {
+                border-color: rgba(255, 255, 255, 0.12);
+              }
+            </style>
+
+            <div class="flex items-center mb-4">
+              <span class="bg-orange-600 rounded-full p-2 mr-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#ffffff"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="icon icon-tabler icons-tabler-outline icon-tabler-user"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                  <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
+                  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+                </svg>
+              </span>
+              <div>
+                <span class="text-2xl font-bold">Perfil de Usuario</span><br />
+                <span class="text-sm text-gray-300">Información personal</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-1 gap-4">
+              <div>
+                <label class="block text-sm font-semibold mb-1">Usuario</label>
+                <input
+                  name="usuario"
+                  type="text"
+                  value="{{ usuario[1] }}"
+                  class="profile-input w-full bg-dark-card border border-gray-700 rounded px-3 py-2 h-12 text-white"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-1">Rol</label>
+                <input
+                  type="text"
+                  value="{{ usuario[2] if usuario else '' }}"
+                  disabled
+                  class="profile-input w-full bg-dark-card border border-gray-700 rounded px-3 py-2 h-12 text-white cursor-not-allowed"
+                />
+                <input
+                  type="hidden"
+                  name="rol"
+                  value="{{ usuario[2] if usuario else '' }}"
+                />
+              </div>
+            </div>
+
+            <div class="mt-4 flex justify-start">
+              <button
+                id="perfil-submit"
+                type="submit"
+                class="bg-orange-600 text-white px-6 py-3 rounded-md"
+              >
+                Guardar Cambios
+              </button>
+            </div>
+          </div>
+        </form>
+        {% endif %}
+
+        <!-- Seguridad: cambiar contraseña -->
+        <form
+          id="security-form"
+          action="{{ url_for('config.cambiar_contrasena') }}"
+          method="post"
+          class="w-full"
+        >
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div class="bg-dark-card rounded-2xl shadow-lg p-6 text-white">
+            <style>
+              /* Checklist styles for security requirements */
+              #security-checklist { pointer-events: none; }
+              #security-checklist .checklist-dot {
+                width: 20px;
+                height: 20px;
+                border-radius: 9999px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                color: transparent;
+                border: 1px solid #bfae9f;
+                background: transparent;
+              }
+              #security-checklist li.passed { color: #fef3e7; }
+              #security-checklist li.passed .checklist-dot {
+                background: #ef893f;
+                border-color: #ef893f;
+                color: white;
+              }
+              #security-checklist li { transition: color .12s ease; }
+                /* Password toggle button inside inputs */
+                .pw-toggle-btn {
+                  background: transparent;
+                  border: none;
+                  cursor: pointer;
+                  color: #bfae9f;
+                  padding: 6px;
+                  display: inline-flex;
+                  align-items: center;
+                  justify-content: center;
+                  z-index: 20;
+                  right: 0.625rem;
+                }
+                .pw-toggle-btn:focus { outline: none; }
+                .pw-toggle-btn svg { width: 18px; height: 18px; }
+                /* when active (password visible) show a filled orange circle */
+                .pw-toggle-btn.active { background: #ef893f; border-radius: 9999px; color: white; }
+                .pw-toggle-btn.active svg { stroke: #fff; }
+            </style>
+            <div class="flex items-center mb-4">
+              <span class="bg-orange-600 rounded-full p-2 mr-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-6 w-6 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5 9 6.343 9 8s1.343 3 3 3zM5 21v-2a4 4 0 014-4h6a4 4 0 014 4v2"
+                  />
+                </svg>
+              </span>
+              <div>
+                <span class="text-2xl font-bold">Seguridad</span><br />
+                <span class="text-sm text-gray-300">Mantén tu cuenta segura</span>
+              </div>
+            </div>
+
+            <div class="relative">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold mb-1"
+                  >Nueva Contraseña</label
+                >
+                <div class="relative">
+                  <input
+                    id="new-password"
+                    name="new_password"
+                    type="password"
+                    autocomplete="new-password"
+                    placeholder="********"
+                    maxlength="64"
+                    class="profile-input w-full bg-dark-card border border-gray-700 rounded px-4 pr-10 h-12 text-white"
+                    />
+                  <button type="button" id="toggle-new" class="pw-toggle-btn absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#bfae9f]" aria-label="Mostrar contraseña">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-1"
+                  >Confirmar Contraseña</label
+                >
+                <div class="relative">
+                  <input
+                    id="confirm-password"
+                    name="confirm_password"
+                    type="password"
+                    autocomplete="new-password"
+                    placeholder="********"
+                    maxlength="64"
+                    class="profile-input w-full bg-dark-card border border-gray-700 rounded px-4 pr-10 h-12 text-white"
+                    />
+                  <button type="button" id="toggle-confirm" class="pw-toggle-btn absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#bfae9f]" aria-label="Mostrar contraseña de confirmación">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              
+              
+            </div>
+            <!-- Checklist dinámico: aparece al enfocar y se actualiza mientras escribe -->
+            <div id="security-checklist" class="mt-3 text-sm text-[#bfae9f] hidden">
+              <ul class="space-y-2">
+                <li class="flex items-center" data-rule="upper">
+                  <span class="w-5 h-5 mr-2 rounded-full flex items-center justify-center checklist-dot border" aria-hidden="true">&#10003;</span>
+                  Una mayúscula
+                </li>
+                <li class="flex items-center" data-rule="lower">
+                  <span class="w-5 h-5 mr-2 rounded-full flex items-center justify-center checklist-dot border" aria-hidden="true">&#10003;</span>
+                  Una minúscula
+                </li>
+                <li class="flex items-center" data-rule="digit">
+                  <span class="w-5 h-5 mr-2 rounded-full flex items-center justify-center checklist-dot border" aria-hidden="true">&#10003;</span>
+                  Un número
+                </li>
+                <li class="flex items-center" data-rule="special">
+                  <span class="w-5 h-5 mr-2 rounded-full flex items-center justify-center checklist-dot border" aria-hidden="true">&#10003;</span>
+                  Un carácter especial
+                </li>
+                <li class="flex items-center" data-rule="minlen">
+                  <span class="w-5 h-5 mr-2 rounded-full flex items-center justify-center checklist-dot border" aria-hidden="true">&#10003;</span>
+                  Longitud mínima: 8 caracteres
+                </li>
+              </ul>
+            </div>
+
+            <div id="security-error" class="mt-3 text-sm text-red-400 hidden"></div>
+
+            <div class="mt-6 flex justify-start">
+              <button
+                id="security-submit"
+                type="submit"
+                class="bg-orange-600 text-white px-6 py-3 rounded-md"
+              >
+                Actualizar Contraseña
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Notificaciones (abajo, ancho completo) -->
+      <div class="w-full lg:col-span-2">
+        <div class="w-full">
+          <div class="bg-[#231a15] rounded-2xl shadow-lg p-8 text-white h-full">
+            <style>
+              /* Toggle personalizado para parecerse al diseño */
+              .switch {
+                display: inline-block;
+                position: relative;
+              }
+              .switch input {
+                position: absolute;
+                opacity: 0;
+                width: 0;
+                height: 0;
+              }
+              .switch-slider {
+                display: inline-block;
+                width: 46px;
+                height: 26px;
+                background: #2b231f;
+                border-radius: 9999px;
+                border: 2px solid #3a2c22;
+                position: relative;
+                transition: background-color 0.18s ease, border-color 0.18s ease;
+              }
+              .switch-slider::before {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 4px;
+                transform: translateY(-50%);
+                width: 18px;
+                height: 18px;
+                background: #fff;
+                border-radius: 9999px;
+                box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.25) inset;
+                transition: transform 0.18s ease, box-shadow 0.18s ease;
+              }
+              .switch input:checked + .switch-slider {
+                background: #ef893f;
+                border-color: #ef893f;
+              }
+              .switch input:checked + .switch-slider::before {
+                transform: translateY(-50%) translateX(20px);
+                box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.25) inset;
+              }
+            </style>
+
+            <div class="flex items-center mb-6">
+              <span class="bg-orange-600 rounded-full p-2 mr-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-6 w-6 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                  />
+                </svg>
+              </span>
+              <div>
+                <span class="text-2xl font-bold">Notificaciones</span><br />
+                <span class="text-base text-[#bfae9f]"
+                  >Gestiona cómo recibes las notificaciones</span
+                >
+              </div>
+            </div>
+
+            <div class="divide-y divide-[#3a2c22]">
+              <div class="flex items-center justify-between py-5">
+                <div>
+                  <span class="font-semibold text-[18px]">Pagos Pendientes</span
+                  ><br />
+                  <span class="text-[15px] text-[#bfae9f]"
+                    >Recibe alertas de pagos próximos a vencer</span
+                  >
+                </div>
+                <label class="switch inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="noti-pendientes" class="sr-only noti-switch" {% if noti_pendientes %}checked{% endif %} />
+                  <span class="switch-slider"></span>
+                </label>
+              </div>
+              <div class="flex items-center justify-between py-5">
+                <div>
+                  <span class="font-semibold text-[18px]">Pagos Atrasados</span
+                  ><br />
+                  <span class="text-[15px] text-[#bfae9f]"
+                    >Resibe notificaciones despues de que aya pasado la fecha del cuarto</span
+                  >
+                </div>
+                <label class="switch inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="noti-atrasados" class="sr-only noti-switch" {% if noti_atrasados %}checked{% endif %} />
+                  <span class="switch-slider"></span>
+                </label>
+              </div>
+              <div class="flex items-center justify-between py-5">
+                <div>
+                  <span class="font-semibold text-[18px]">Acceso Directo</span><br />
+                  <span class="text-[15px] text-[#bfae9f]">Crear un acceso directo en el Escritorio para abrir el sistema</span>
+                </div>
+                <label class="switch inline-flex items-center cursor-pointer">
+                  <input type="checkbox" class="sr-only shortcut-switch" id="shortcut-switch" {% if shortcut_exists %}checked{% endif %} />
+                  <span class="switch-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  // Mejora UX: deshabilitar botón al enviar para evitar envíos dobles
+  (function () {
+    const form = document.getElementById('perfil-form');
+    const btn = document.getElementById('perfil-submit');
+    if (form && btn) {
+      form.addEventListener('submit', function (e) {
+        // Validación simple: usuario no vacío
+        const usuario = form.querySelector('[name="usuario"]').value.trim();
+        if (!usuario) {
+          e.preventDefault();
+          alert('El usuario no puede estar vacío');
+          return;
+        }
+        btn.disabled = true;
+        btn.textContent = 'Guardando...';
+      });
+    }
+  })();
+
+  // Toggle para notificaciones (persistir preferencias)
+  (function(){
+    const notiPend = document.getElementById('noti-pendientes');
+    const notiAtras = document.getElementById('noti-atrasados');
+    const csrfToken = '{{ csrf_token() }}';
+
+    if (!notiPend && !notiAtras) return;
+
+    async function postPref(key, value){
+      try{
+        const res = await fetch('{{ url_for("config.update_preference") }}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+          },
+          body: JSON.stringify({ key: key, value: value })
+        });
+        return res;
+      }catch(e){ console.error(e); throw e }
+    }
+
+    if (notiPend) {
+      notiPend.addEventListener('change', async function(){
+        const checked = !!notiPend.checked;
+        notiPend.disabled = true;
+        try{
+          const r = await postPref('noti_pendientes', checked);
+          if (!r.ok) {
+            const j = await r.json().catch(()=>({message:'Error'}));
+            alert('No se pudo guardar la preferencia: ' + (j.message || r.statusText));
+            notiPend.checked = !checked;
+          }
+        }catch(e){ alert('Error al comunicarse con el servidor'); notiPend.checked = !checked }
+        finally{ notiPend.disabled = false }
+      });
+    }
+
+    if (notiAtras) {
+      notiAtras.addEventListener('change', async function(){
+        const checked = !!notiAtras.checked;
+        notiAtras.disabled = true;
+        try{
+          const r = await postPref('noti_atrasados', checked);
+          if (!r.ok) {
+            const j = await r.json().catch(()=>({message:'Error'}));
+            alert('No se pudo guardar la preferencia: ' + (j.message || r.statusText));
+            notiAtras.checked = !checked;
+          }
+        }catch(e){ alert('Error al comunicarse con el servidor'); notiAtras.checked = !checked }
+        finally{ notiAtras.disabled = false }
+      });
+    }
+  })();
+
+  // Validación cliente para formulario de seguridad
+  (function(){
+    const secForm = document.getElementById('security-form');
+    const msg = document.getElementById('security-error');
+    const submitBtn = document.getElementById('security-submit');
+    if (!secForm) return;
+
+    secForm.addEventListener('submit', function(e){
+      const newPass = document.getElementById('new-password').value || '';
+      const confirm = document.getElementById('confirm-password').value || '';
+      // reset
+      if (msg) {
+        msg.classList.add('hidden');
+        msg.textContent = '';
+      }
+
+      if (!newPass || !confirm) {
+        e.preventDefault();
+        if (msg) { msg.textContent = 'Ambos campos son requeridos'; msg.classList.remove('hidden'); }
+        return;
+      }
+
+      if (newPass !== confirm) {
+        e.preventDefault();
+        if (msg) { msg.textContent = 'La nueva contraseña y la confirmación no coinciden'; msg.classList.remove('hidden'); }
+        return;
+      }
+
+      if (newPass.length < 8) {
+        e.preventDefault();
+        if (msg) { msg.textContent = 'La contraseña debe tener al menos 8 caracteres'; msg.classList.remove('hidden'); }
+        return;
+      }
+
+      const hasUpper = /[A-Z]/.test(newPass);
+      const hasLower = /[a-z]/.test(newPass);
+      const hasDigit = /\d/.test(newPass);
+      const hasSpecial = /[^A-Za-z0-9]/.test(newPass);
+
+      if (!hasUpper || !hasLower || !hasDigit || !hasSpecial) {
+        e.preventDefault();
+        if (msg) { msg.textContent = 'La contraseña debe incluir mayúscula, minúscula, número y carácter especial'; msg.classList.remove('hidden'); }
+        return;
+      }
+
+      // disable button to avoid double submit
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Actualizando...';
+      }
+    });
+  })();
+
+  // Checklist interactivo: muestra requisitos al enfocar y marca en tiempo real
+  (function(){
+    const newPass = document.getElementById('new-password');
+    const confirmPass = document.getElementById('confirm-password');
+    const checklist = document.getElementById('security-checklist');
+    if (!newPass || !checklist) return;
+
+    const items = {
+      upper: checklist.querySelector('[data-rule="upper"]'),
+      lower: checklist.querySelector('[data-rule="lower"]'),
+      digit: checklist.querySelector('[data-rule="digit"]'),
+      special: checklist.querySelector('[data-rule="special"]'),
+      minlen: checklist.querySelector('[data-rule="minlen"]')
+    };
+
+    function updateChecks(val){
+      const hasUpper = /[A-Z]/.test(val);
+      const hasLower = /[a-z]/.test(val);
+      const hasDigit = /\d/.test(val);
+      const hasSpecial = /[^A-Za-z0-9]/.test(val);
+      const minlen = val.length >= 8;
+      toggle(items.upper, hasUpper);
+      toggle(items.lower, hasLower);
+      toggle(items.digit, hasDigit);
+      toggle(items.special, hasSpecial);
+      toggle(items.minlen, minlen);
+    }
+
+    function toggle(el, ok){
+      if(!el) return;
+      if(ok) el.classList.add('passed');
+      else el.classList.remove('passed');
+    }
+
+    let hideTimeout = null;
+    newPass.addEventListener('focus', function(){
+      if (checklist) checklist.classList.remove('hidden');
+      updateChecks(newPass.value);
+      if (hideTimeout) { clearTimeout(hideTimeout); hideTimeout = null; }
+    });
+    newPass.addEventListener('input', function(){ updateChecks(newPass.value); });
+    newPass.addEventListener('blur', function(){
+      hideTimeout = setTimeout(function(){ if (!confirmPass || !confirmPass.matches(':focus')) checklist.classList.add('hidden'); }, 200);
+    });
+
+    if (confirmPass) {
+      confirmPass.addEventListener('focus', function(){ checklist.classList.remove('hidden'); updateChecks(newPass.value); if (hideTimeout) { clearTimeout(hideTimeout); hideTimeout = null; } });
+      confirmPass.addEventListener('blur', function(){ hideTimeout = setTimeout(function(){ checklist.classList.add('hidden'); }, 200); });
+    }
+    // Toggle show/hide buttons (use SVG icons inside buttons)
+    const tNew = document.getElementById('toggle-new');
+    const tConfirm = document.getElementById('toggle-confirm');
+    // SVGs: show (eye) and hide (eye with slash)
+    const svgShow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true">\n                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"></path>\n                    <circle cx="12" cy="12" r="3"></circle>\n                  </svg>';
+    const svgHide = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true">\n                    <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.86 21.86 0 0 1 5-6.11"></path>\n                    <path d="M3 3l18 18"></path>\n                    <path d="M9.88 9.88a3 3 0 0 0 4.24 4.24"></path>\n                  </svg>';
+
+    if (tNew) {
+      // init icon
+      tNew.innerHTML = svgShow;
+      // Prevent button from stealing focus on mousedown and preserve caret
+      tNew.addEventListener('mousedown', function(ev){ ev.preventDefault(); });
+      tNew.addEventListener('click', function(){
+        // preserve caret
+        const start = newPass.selectionStart;
+        const end = newPass.selectionEnd;
+        if (newPass.type === 'password') {
+          newPass.type = 'text';
+          tNew.innerHTML = svgHide;
+          tNew.setAttribute('aria-label','Ocultar contraseña');
+          tNew.classList.add('active');
+        } else {
+          newPass.type = 'password';
+          tNew.innerHTML = svgShow;
+          tNew.setAttribute('aria-label','Mostrar contraseña');
+          tNew.classList.remove('active');
+        }
+        // restore focus and caret position
+        newPass.focus();
+        try { newPass.setSelectionRange(start, end); } catch (e) {}
+      });
+    }
+    if (tConfirm) {
+      // init icon
+      tConfirm.innerHTML = svgShow;
+      // Prevent button from stealing focus on mousedown and preserve caret
+      tConfirm.addEventListener('mousedown', function(ev){ ev.preventDefault(); });
+      tConfirm.addEventListener('click', function(){
+        const start = confirmPass.selectionStart;
+        const end = confirmPass.selectionEnd;
+        if (confirmPass.type === 'password') {
+          confirmPass.type = 'text';
+          tConfirm.innerHTML = svgHide;
+          tConfirm.setAttribute('aria-label','Ocultar contraseña de confirmación');
+          tConfirm.classList.add('active');
+        } else {
+          confirmPass.type = 'password';
+          tConfirm.innerHTML = svgShow;
+          tConfirm.setAttribute('aria-label','Mostrar contraseña de confirmación');
+          tConfirm.classList.remove('active');
+        }
+        confirmPass.focus();
+        try { confirmPass.setSelectionRange(start, end); } catch (e) {}
+      });
+    }
+  })();
+
+  // Toggle para crear/eliminar acceso directo
+  (function(){
+    const shortcutSwitch = document.getElementById('shortcut-switch');
+    // token CSRF para llamadas POST
+    const csrfToken = '{{ csrf_token() }}';
+
+    if (!shortcutSwitch) return;
+
+    async function postJson(url, body){
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify(body || {})
+      });
+      return res;
+    }
+    // Inicializar estado del toggle teniendo en cuenta si la PWA está instalada en el dispositivo
+    try {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true || !!window.isPWAInstalled;
+      // Si la app ya está instalada como PWA, marcar el toggle
+      if (isStandalone) {
+        shortcutSwitch.checked = true;
+      }
+    } catch (e) { /* ignore */ }
+
+    shortcutSwitch.addEventListener('change', async function(ev){
+      const checked = shortcutSwitch.checked;
+      shortcutSwitch.disabled = true;
+      const isAndroid = /android/i.test(navigator.userAgent || '');
+      const isInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true || !!window.isPWAInstalled;
+      try {
+        if (checked) {
+          // If running on Android (or if beforeinstallprompt is available), try to trigger PWA install
+          if (window.deferredPWAInstall || isAndroid) {
+            // Try native prompt if available
+            if (window.triggerPWAInstall) {
+              const result = await window.triggerPWAInstall();
+              if (result && result.outcome === 'accepted') {
+                // installed
+                shortcutSwitch.checked = true;
+              } else {
+                // If no result (no prompt), show manual instructions for Android
+                  if (!result) {
+                    showInstallInstructions('install');
+                    shortcutSwitch.checked = true; // assume user will install manually
+                } else {
+                  shortcutSwitch.checked = false;
+                }
+              }
+              shortcutSwitch.disabled = false;
+              return;
+            } else {
+              // fallback: show manual instructions
+              showInstallInstructions('install');
+              shortcutSwitch.checked = true;
+              shortcutSwitch.disabled = false;
+              return;
+            }
+          }
+
+          // Otherwise assume desktop: call backend to create .lnk
+          const r = await postJson('{{ url_for("config.crear_shortcut") }}', { url: window.location.origin, name: 'sistema cuartos' });
+          if (!r.ok) {
+            const txt = await r.json().catch(()=>({message:'Error'}));
+            alert('No se pudo crear el acceso directo: ' + (txt.message || r.statusText));
+            shortcutSwitch.checked = false;
+          }
+        } else {
+          // If it seems installed as PWA, instruct user how to remove it (cannot uninstall programmatically)
+          if (isInstalled) {
+            const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent || '');
+            if (isIOS) {
+              showInstallInstructions('uninstall-ios');
+            } else {
+              showInstallInstructions('uninstall-android');
+            }
+            // reflect user action: uncheck the switch (we cannot force uninstall)
+            shortcutSwitch.checked = false;
+            shortcutSwitch.disabled = false;
+            return;
+          }
+
+          // Otherwise desktop: delete .lnk
+          const r = await postJson('{{ url_for("config.eliminar_shortcut") }}', { name: 'sistema cuartos' });
+          if (!r.ok) {
+            const txt = await r.json().catch(()=>({message:'Error'}));
+            alert('No se pudo eliminar el acceso directo: ' + (txt.message || r.statusText));
+            shortcutSwitch.checked = true;
+          }
+        }
+      } catch (e) {
+        alert('Error en la operación: ' + e.message);
+        shortcutSwitch.checked = !checked;
+      } finally {
+        shortcutSwitch.disabled = false;
+      }
+    });
+  })();
+</script>
+<!-- Modal instrucciones instalación/desinstalación PWA -->
+<div id="install-modal" class="fixed inset-0 z-50 hidden items-center justify-center">
+  <div class="absolute inset-0 bg-black/60" onclick="hideInstallInstructions()"></div>
+  <div class="bg-white dark:bg-dark-card rounded-lg shadow-lg max-w-xl w-11/12 p-6 relative z-10">
+    <h3 id="install-modal-title" class="text-lg font-semibold text-gray-900 dark:text-white">Instrucciones</h3>
+    <div id="install-modal-body" class="mt-3 text-sm text-gray-700 dark:text-gray-300"></div>
+    <div class="mt-5 text-right">
+      <button onclick="hideInstallInstructions()" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded text-sm">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function showInstallInstructions(type){
+  const titleEl = document.getElementById('install-modal-title');
+  const bodyEl = document.getElementById('install-modal-body');
+  const modal = document.getElementById('install-modal');
+  if (!modal || !bodyEl) return alert('Abra el menú del navegador y elija "Añadir a pantalla de inicio".');
+  if (type === 'install'){
+    titleEl.textContent = 'Instalar en el dispositivo';
+    bodyEl.innerHTML = `Sigue estos pasos para añadir la aplicación a la pantalla de inicio:<ol class="list-decimal pl-5 mt-2"><li>Abra el menú del navegador (⋮) en su dispositivo Android.</li><li>Seleccione "Añadir a pantalla de inicio" o "Add to Home screen".</li><li>Confirme. El icono en la pantalla de inicio usará el icono generado.</li></ol>`;
+  } else if (type === 'uninstall-ios'){
+    titleEl.textContent = 'Quitar aplicación (iOS)';
+    bodyEl.innerHTML = `Para quitar la app en iOS: mantén pulsado el icono en la pantalla de inicio y selecciona "Eliminar".`;
+  } else if (type === 'uninstall-android'){
+    titleEl.textContent = 'Quitar aplicación (Android)';
+    bodyEl.innerHTML = `Para quitar la app en Android: mantén pulsado el icono en la pantalla de inicio y selecciona "Eliminar" o "Desinstalar".`;
+  } else {
+    titleEl.textContent = 'Instrucciones';
+    bodyEl.textContent = 'Abra el menú del navegador y elija "Añadir a pantalla de inicio".';
+  }
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+function hideInstallInstructions(){
+  const modal = document.getElementById('install-modal');
+  if (!modal) return;
+  modal.classList.remove('flex');
+  modal.classList.add('hidden');
+}
+</script>
+{% endblock %}

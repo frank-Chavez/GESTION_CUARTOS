@@ -1,0 +1,154 @@
+<!-- Formulario para agregar inquilino en el dashboard -->
+<form
+  action="{{ url_for('inquilinos.agregar') }}"
+  method="POST"
+  class="p-4 space-y-4"
+>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label
+        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+        >Nombre</label
+      >
+      <input
+        type="text"
+        name="nombre"
+        required
+        class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-[#201813] text-gray-900 dark:text-white focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+      />
+    </div>
+    <div>
+      <label
+        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+        >Apellido</label
+      >
+      <input
+        type="text"
+        name="apellido"
+        required
+        class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-[#201813] text-gray-900 dark:text-white focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+      />
+    </div>
+  </div>
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label
+        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+        >DNI</label
+      >
+      <input
+        type="text"
+        name="dni"
+        required
+        pattern="[0-9]+"
+        title="Solo números"
+        class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-[#201813] text-gray-900 dark:text-white focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+      />
+    </div>
+    <div>
+      <label
+        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+        >Teléfono</label
+      >
+      <input
+        type="tel"
+        name="telefono"
+        required
+        class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-[#201813] text-gray-900 dark:text-white focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+      />
+    </div>
+  </div>
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label
+        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+        >Cuarto</label
+      >
+      <select
+        name="cuarto"
+        id="select-cuarto-dashboard"
+        required
+        class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-[#201813] text-gray-900 dark:text-white focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+      >
+        {% if cuartos_disponibles|length > 0 %}
+        <option value="" data-precio="0">Seleccionar cuarto</option>
+        {% for cuarto in cuartos_disponibles %}
+        <option value="{{ cuarto[1] }}" data-precio="{{ cuarto[3] }}">
+          {{ cuarto[1] }} - Piso {{ cuarto[2] }} (S/{{ "%.2f"|format(cuarto[3])
+          }})
+        </option>
+        {% endfor %} {% else %}
+        <option value="" data-precio="0">No hay cuartos disponibles</option>
+        {% endif %}
+      </select>
+    </div>
+    <div>
+      <label
+        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+        >Renta Mensual (S/)</label
+      >
+      <input
+        type="number"
+        name="renta_mensual"
+        id="input-renta-dashboard"
+        required
+        min="0.01"
+        step="0.01"
+        readonly
+        class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-gray-100 dark:bg-[#1a1410] text-gray-900 dark:text-white focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+      />
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const selectCuarto = document.getElementById('select-cuarto-dashboard');
+      const inputRenta = document.getElementById('input-renta-dashboard');
+      selectCuarto.addEventListener('change', function () {
+        const selected = selectCuarto.options[selectCuarto.selectedIndex];
+        const precio = selected.getAttribute('data-precio');
+        inputRenta.value = precio ? parseFloat(precio).toFixed(2) : '';
+      });
+    });
+  </script>
+  <div>
+    <label
+      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+      >Fecha de Inicio</label
+    >
+    <input
+      type="date"
+      name="fecha_inicio"
+      required
+      class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-[#201813] text-gray-900 dark:text-white focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+    />
+  </div>
+  <div class="flex items-center gap-2">
+    <input
+      type="checkbox"
+      name="ya_pago"
+      id="ya_pago_dashboard"
+      class="w-4 h-4 text-[#ef893f] rounded focus:ring-[#ef893f]"
+    />
+    <label
+      for="ya_pago_dashboard"
+      class="text-sm text-gray-700 dark:text-gray-300"
+      >¿Ya realizó el primer pago?</label
+    >
+  </div>
+  <div class="flex gap-3 pt-4 border-t border-gray-200 dark:border-dark-border">
+    <button
+      type="button"
+      id="cancel-add-btn-dashboard"
+      class="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-dark-border text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-hover transition-colors"
+    >
+      Cancelar
+    </button>
+    <button
+      type="submit"
+      class="flex-1 px-4 py-2 rounded-lg bg-[#ef893f] hover:bg-[#ff9951] text-white font-medium transition-colors"
+    >
+      Agregar Inquilino
+    </button>
+  </div>
+</form>

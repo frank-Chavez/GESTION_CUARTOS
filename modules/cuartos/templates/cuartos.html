@@ -1,0 +1,840 @@
+{% extends "base.html" %} {% block title %}Cuartos - Sistema{% endblock %} {%
+block content %}
+<div
+  class="flex p-4 sm:px-8 w-full justify-between items-center flex-wrap gap-4"
+>
+  <div class="flex flex-col">
+    <h2
+      class="sm:text-[35px] text-[22px] font-poppins font-[900] text-gray-900 dark:text-white"
+    >
+      Gestión de Cuartos
+    </h2>
+    <p
+      class="text-[#654640] dark:text-dark-muted sm:text-[16px] text-[12px] font-poppins"
+    >
+      Administra los cuartos disponibles
+    </p>
+  </div>
+  <div>
+    <button
+      data-modal-target="agregar-cuarto-modal"
+      data-modal-toggle="agregar-cuarto-modal"
+      class="flex p-2 bg-[#ef893f] hover:bg-[#ff9951] text-white gap-2 font-poppins text-[13px] sm:text-[15px] rounded-lg transition-colors"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      <span class="hidden sm:inline">Agregar Cuarto</span>
+      <span class="sm:hidden">Agregar</span>
+    </button>
+  </div>
+</div>
+
+<!-- Tarjetas de estadísticas -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 p-4 sm:px-8">
+  <!-- Total Cuartos -->
+  <div class="bg-white dark:bg-dark-card rounded-lg border border-gray-200 dark:border-dark-border p-4">
+    <p class="text-3xl font-bold text-white">{{ stats.total }}</p>
+    <p class="text-sm text-gray-500 dark:text-gray-400">Total Cuartos</p>
+  </div>
+  <!-- Disponibles -->
+  <div class="bg-white dark:bg-dark-card rounded-lg border border-gray-200 dark:border-dark-border p-4">
+    <p class="text-3xl font-bold text-green-500">{{ stats.disponibles }}</p>
+    <p class="text-sm text-gray-500 dark:text-gray-400">Disponibles</p>
+  </div>
+  <!-- Ocupados -->
+  <div class="bg-white dark:bg-dark-card rounded-lg border border-gray-200 dark:border-dark-border p-4">
+    <p class="text-3xl font-bold text-[#ef893f]">{{ stats.ocupados }}</p>
+    <p class="text-sm text-gray-500 dark:text-gray-400">Ocupados</p>
+  </div>
+  <!-- Mantenimiento -->
+  <div class="bg-white dark:bg-dark-card rounded-lg border border-gray-200 dark:border-dark-border p-4">
+    <p class="text-3xl font-bold text-red-500">{{ stats.mantenimiento }}</p>
+    <p class="text-sm text-gray-500 dark:text-gray-400">Mantenimiento</p>
+  </div>
+</div>
+
+<div class="p-4 sm:px-8">
+  <div
+    class="bg-white dark:bg-dark-card rounded-lg shadow-sm dark:shadow-dark-border/20 p-4 sm:p-6 transition-colors flex flex-col gap-4"
+  >
+    <!-- Buscador -->
+    <div class="flex items-center relative w-full">
+      <img
+        src="/static/icons/search.svg"
+        alt=""
+        class="w-5 h-5 dark:invert dark:opacity-80 absolute left-3 top-1/2 -translate-y-1/2"
+      />
+      <input
+        type="search"
+        id="searchInput"
+        placeholder="Buscar por nombre, piso o inquilino..."
+        class="pl-10 sm:pl-12 pr-4 py-2 text-sm sm:text-base rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-[#201813] w-full text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ef893f] focus:border-transparent"
+      />
+    </div>
+
+    <!-- Filtros por estado -->
+    <div class="flex flex-wrap gap-2">
+      <button
+        type="button"
+        data-filter="todos"
+        class="filter-btn px-4 py-2 text-sm font-medium rounded-lg bg-[#ef893f] text-white"
+      >
+        Todos
+      </button>
+      <button
+        type="button"
+        data-filter="disponible"
+        class="filter-btn px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-[#3d2a1f] text-gray-700 dark:text-gray-300"
+      >
+        Disponibles
+      </button>
+      <button
+        type="button"
+        data-filter="ocupado"
+        class="filter-btn px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-[#3d2a1f] text-gray-700 dark:text-gray-300"
+      >
+        Ocupados
+      </button>
+      <button
+        type="button"
+        data-filter="mantenimiento"
+        class="filter-btn px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-[#3d2a1f] text-gray-700 dark:text-gray-300"
+      >
+        Mantenimiento
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Lista de Cuartos -->
+<div class="p-4 sm:px-8">
+  <div class="bg-white dark:bg-dark-card rounded-lg shadow-sm dark:shadow-dark-border/20 p-4 sm:p-6 transition-colors">
+    <!-- Encabezado de la lista -->
+    <div class="flex items-center gap-2 mb-6">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+      </svg>
+      <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+        Lista de Cuartos (<span id="cuartos-count">{{ cuartos|length }}</span>)
+      </h3>
+    </div>
+
+    <!-- Tabla de cuartos -->
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-gray-200 dark:border-dark-border">
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Cuarto</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Piso</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Precio</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Inquilino</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Estado</th>
+            <th class="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="cuartosTableBody">
+          {% for cuarto in cuartos %}
+          <tr 
+            class="cuarto-row border-b border-gray-100 dark:border-dark-border/50 hover:bg-gray-50 dark:hover:bg-[#201813] transition-colors"
+            data-numero="{{ cuarto[1] }}"
+            data-piso="{{ cuarto[2] }}"
+            data-descripcion="{{ cuarto[4] or '' }}"
+            data-estado="{{ cuarto[5] }}"
+            data-inquilino="{{ cuarto[6] or '' }}"
+          >
+            <td class="py-4 px-4">
+              <span class="text-[#ef893f] font-medium">{{ cuarto[1] }}</span>
+            </td>
+            <td class="py-4 px-4 text-gray-700 dark:text-gray-300">{{ cuarto[2] }}</td>
+            <td class="py-4 px-4 text-gray-700 dark:text-gray-300">S/{{ "%.0f"|format(cuarto[3]) }}</td>
+            <td class="py-4 px-4 text-gray-700 dark:text-gray-300">{{ cuarto[6] or '-' }}</td>
+            <td class="py-4 px-4">
+              <span class="px-3 py-1 rounded-full text-xs font-medium {% if cuarto[5] == 'disponible' %}bg-green-500 text-white{% elif cuarto[5] == 'ocupado' %}bg-[#ef893f] text-white{% else %}bg-red-500 text-white{% endif %}">
+                {{ cuarto[5]|capitalize }}
+              </span>
+            </td>
+            <td class="py-4 px-4">
+              <div class="flex items-center justify-end gap-2">
+                <!-- Ver detalles -->
+                <button
+                  data-id="{{ cuarto[0] }}"
+                  class="view-btn p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                  title="Ver detalles"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </button>
+                <!-- Editar -->
+                <button
+                  data-id="{{ cuarto[0] }}"
+                  class="edit-btn p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                  title="Editar"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <!-- Eliminar -->
+                <button
+                  data-id="{{ cuarto[0] }}"
+                  data-numero="{{ cuarto[1] }}"
+                  class="delete-btn p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                  title="Eliminar"
+                  {% if cuarto[5] == 'ocupado' %}disabled{% endif %}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="py-12">
+              <div class="flex flex-col items-center justify-center text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-gray-400 dark:text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <p class="text-gray-500 dark:text-gray-400 text-base">No hay cuartos registrados</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+
+<!-- Modal Agregar Cuarto -->
+<div
+  id="agregar-cuarto-modal"
+  tabindex="-1"
+  aria-hidden="true"
+  class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full bg-black/50"
+>
+  <div class="relative p-4 w-full max-w-lg max-h-full">
+    <div class="relative bg-white rounded-2xl shadow-xl dark:bg-[#2a1f1a]">
+      <!-- Header -->
+      <div class="flex items-start justify-between p-6 pb-0">
+        <div>
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
+            Agregar Nuevo Cuarto
+          </h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Completa la información del cuarto
+          </p>
+        </div>
+        <button
+          type="button"
+          class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center dark:hover:bg-gray-700 dark:hover:text-white"
+          data-modal-hide="agregar-cuarto-modal"
+        >
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+          </svg>
+          <span class="sr-only">Cerrar</span>
+        </button>
+      </div>
+      
+      <!-- Formulario -->
+      <div class="p-6">
+        <form
+          class="space-y-5"
+          action="{{ url_for('cuartos.agregar') }}"
+          method="POST"
+        >
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          
+          <!-- Nombre y Piso en una fila -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="numero" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                Nombre del cuarto
+              </label>
+              <input
+                type="text"
+                name="numero"
+                id="numero"
+                class="bg-transparent border-2 border-[#ef893f] text-gray-900 text-sm rounded-lg focus:ring-[#ef893f] focus:border-[#ef893f] block w-full p-3 dark:bg-transparent dark:border-[#ef893f] dark:placeholder-gray-500 dark:text-white"
+                placeholder="A-101"
+                required
+              />
+            </div>
+            <div>
+              <label for="piso" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                Piso
+              </label>
+              <input
+                type="number"
+                name="piso"
+                id="piso"
+                min="1"
+                value="1"
+                class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#ef893f] focus:border-[#ef893f] block w-full p-3 dark:bg-[#3d2a1f] dark:border-[#3d2a1f] dark:placeholder-gray-500 dark:text-white"
+                required
+              />
+            </div>
+          </div>
+          
+          <!-- Precio y Estado en una fila -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="precio" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                Precio mensual
+              </label>
+              <input
+                type="number"
+                name="precio"
+                id="precio"
+                min="0"
+                step="1"
+                placeholder="S/.450"
+                class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#ef893f] focus:border-[#ef893f] block w-full p-3 dark:bg-[#3d2a1f] dark:border-[#3d2a1f] dark:placeholder-gray-500 dark:text-white"
+                required
+              />
+            </div>
+            <div>
+              <label for="estado" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                Estado
+              </label>
+              <select
+                name="estado"
+                id="estado"
+                class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#ef893f] focus:border-[#ef893f] block w-full p-3 dark:bg-[#3d2a1f] dark:border-[#3d2a1f] dark:text-white"
+                required
+              >
+                <option value="disponible">Disponible</option>
+                <option value="ocupado">Ocupado</option>
+                <option value="mantenimiento">Mantenimiento</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- Descripción -->
+          <div>
+            <label for="descripcion" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+              Descripción
+            </label>
+            <textarea
+              name="descripcion"
+              id="descripcion"
+              rows="3"
+              class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#ef893f] focus:border-[#ef893f] block w-full p-3 dark:bg-[#3d2a1f] dark:border-[#3d2a1f] dark:placeholder-gray-500 dark:text-white resize-none"
+              placeholder="Descripción del cuarto..."
+            ></textarea>
+          </div>
+          
+          <!-- Botones -->
+          <div class="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              data-modal-hide="agregar-cuarto-modal"
+              class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors dark:bg-[#3d2a1f] dark:text-gray-300 dark:hover:bg-[#4d3a2f]"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="px-6 py-2.5 text-sm font-medium text-white bg-[#ef893f] hover:bg-[#ff9951] rounded-lg transition-colors"
+            >
+              Guardar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Cuarto -->
+<div
+  id="editar-cuarto-modal"
+  tabindex="-1"
+  aria-hidden="true"
+  class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full bg-black/50"
+>
+  <div class="relative p-4 w-full max-w-lg max-h-full">
+    <div class="relative bg-white rounded-2xl shadow-xl dark:bg-[#2a1f1a]">
+      <!-- Header -->
+      <div class="flex items-start justify-between p-6 pb-0">
+        <div>
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
+            Editar Cuarto
+          </h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Completa la información del cuarto
+          </p>
+        </div>
+        <button
+          type="button"
+          class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center dark:hover:bg-gray-700 dark:hover:text-white"
+          data-modal-hide="editar-cuarto-modal"
+        >
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+          </svg>
+          <span class="sr-only">Cerrar</span>
+        </button>
+      </div>
+      
+      <!-- Formulario -->
+      <div class="p-6">
+        <form
+          class="space-y-5"
+          id="editarCuartoForm"
+          method="POST"
+        >
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          
+          <!-- Nombre y Piso en una fila -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="edit_numero" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                Nombre del cuarto
+              </label>
+              <input
+                type="text"
+                name="numero"
+                id="edit_numero"
+                class="bg-transparent border-2 border-[#ef893f] text-gray-900 text-sm rounded-lg focus:ring-[#ef893f] focus:border-[#ef893f] block w-full p-3 dark:bg-transparent dark:border-[#ef893f] dark:placeholder-gray-500 dark:text-white"
+                required
+              />
+            </div>
+            <div>
+              <label for="edit_piso" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                Piso
+              </label>
+              <input
+                type="number"
+                name="piso"
+                id="edit_piso"
+                min="1"
+                class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#ef893f] focus:border-[#ef893f] block w-full p-3 dark:bg-[#3d2a1f] dark:border-[#3d2a1f] dark:placeholder-gray-500 dark:text-white"
+                required
+              />
+            </div>
+          </div>
+          
+          <!-- Precio y Estado en una fila -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="edit_precio" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                Precio mensual
+              </label>
+              <input
+                type="number"
+                name="precio"
+                id="edit_precio"
+                min="0"
+                step="1"
+                class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#ef893f] focus:border-[#ef893f] block w-full p-3 dark:bg-[#3d2a1f] dark:border-[#3d2a1f] dark:placeholder-gray-500 dark:text-white"
+                required
+              />
+            </div>
+            <div>
+              <label for="edit_estado" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                Estado
+              </label>
+              <select
+                name="estado"
+                id="edit_estado"
+                class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#ef893f] focus:border-[#ef893f] block w-full p-3 dark:bg-[#3d2a1f] dark:border-[#3d2a1f] dark:text-white"
+                required
+              >
+                <option value="disponible">Disponible</option>
+                <option value="ocupado">Ocupado</option>
+                <option value="mantenimiento">Mantenimiento</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- Descripción -->
+          <div>
+            <label for="edit_descripcion" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+              Descripción
+            </label>
+            <textarea
+              name="descripcion"
+              id="edit_descripcion"
+              rows="3"
+              class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#ef893f] focus:border-[#ef893f] block w-full p-3 dark:bg-[#3d2a1f] dark:border-[#3d2a1f] dark:placeholder-gray-500 dark:text-white resize-none"
+              placeholder="Descripción del cuarto..."
+            ></textarea>
+          </div>
+          
+          <!-- Botones -->
+          <div class="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              data-modal-hide="editar-cuarto-modal"
+              class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors dark:bg-[#3d2a1f] dark:text-gray-300 dark:hover:bg-[#4d3a2f]"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="px-6 py-2.5 text-sm font-medium text-white bg-[#ef893f] hover:bg-[#ff9951] rounded-lg transition-colors"
+            >
+              Guardar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ver Detalles Cuarto -->
+<div
+  id="ver-cuarto-modal"
+  tabindex="-1"
+  aria-hidden="true"
+  class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full bg-black/50"
+>
+  <div class="relative p-4 w-full max-w-lg max-h-full">
+    <div class="relative bg-white rounded-2xl shadow-xl dark:bg-[#2a1f1a]">
+      <!-- Header -->
+      <div class="flex items-start justify-between p-6 pb-4 border-b border-gray-200 dark:border-dark-border">
+        <div>
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
+            Detalles del Cuarto
+          </h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Información completa del cuarto
+          </p>
+        </div>
+        <button
+          type="button"
+          class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center dark:hover:bg-gray-700 dark:hover:text-white"
+          data-modal-hide="ver-cuarto-modal"
+        >
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+          </svg>
+          <span class="sr-only">Cerrar</span>
+        </button>
+      </div>
+      
+      <!-- Contenido -->
+      <div class="p-6">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Nombre del cuarto</p>
+            <p class="text-lg font-semibold text-[#ef893f]" id="view_numero">-</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Piso</p>
+            <p class="text-lg font-semibold text-gray-900 dark:text-white" id="view_piso">-</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Precio mensual</p>
+            <p class="text-lg font-semibold text-gray-900 dark:text-white" id="view_precio">-</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Estado</p>
+            <span class="px-3 py-1 rounded-full text-xs font-medium" id="view_estado">-</span>
+          </div>
+          <div class="col-span-2">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Inquilino</p>
+            <p class="text-lg font-semibold text-gray-900 dark:text-white" id="view_inquilino">-</p>
+          </div>
+          <div class="col-span-2">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Descripción</p>
+            <p class="text-gray-700 dark:text-gray-300" id="view_descripcion">Sin descripción</p>
+          </div>
+        </div>
+        
+        <!-- Botón Cerrar -->
+        <div class="flex justify-end pt-6">
+          <button
+            type="button"
+            data-modal-hide="ver-cuarto-modal"
+            class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors dark:bg-[#3d2a1f] dark:text-gray-300 dark:hover:bg-[#4d3a2f]"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirmar Eliminación -->
+<div
+  id="eliminar-cuarto-modal"
+  tabindex="-1"
+  aria-hidden="true"
+  class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full bg-black/50"
+>
+  <div class="bg-white dark:bg-[#2a1f1a] rounded-2xl shadow-xl w-full max-w-md">
+    <div class="flex items-start justify-between p-6 pb-0">
+      <div>
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
+          Eliminar Cuarto
+        </h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          ¿Estás seguro de eliminar este cuarto?
+        </p>
+      </div>
+      <button
+        type="button"
+        id="close-delete-modal"
+        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center dark:hover:bg-gray-700 dark:hover:text-white"
+      >
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 14 14">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+        </svg>
+      </button>
+    </div>
+    <div class="p-6">
+      <div class="bg-red-500/10 border border-red-500/50 rounded-lg p-4 mb-4">
+        <div class="flex items-center gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div>
+            <p class="font-semibold text-red-500" id="delete-numero">Cuarto</p>
+          </div>
+        </div>
+      </div>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+        Esta acción eliminará permanentemente el cuarto y todos los datos asociados. Si hay un inquilino, será desvinculado.
+      </p>
+      <div class="flex gap-3">
+        <form id="eliminarCuartoForm" method="POST" class="flex-1">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button
+            type="submit"
+            class="w-full px-6 py-2.5 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+          >
+            Eliminar
+          </button>
+        </form>
+        <button
+          type="button"
+          id="cancel-delete-btn"
+          class="flex-1 px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors dark:bg-[#3d2a1f] dark:text-gray-300 dark:hover:bg-[#4d3a2f]"
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %} 
+
+{% block scripts %}
+<script>
+    // Cierre de modales de ver y editar cuarto
+    document.addEventListener('DOMContentLoaded', function () {
+      // Modal ver cuarto
+      const viewModal = document.getElementById('ver-cuarto-modal');
+      // Botón cerrar (header)
+      const closeViewBtns = document.querySelectorAll('[data-modal-hide="ver-cuarto-modal"]');
+      closeViewBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          viewModal.classList.add('hidden');
+          viewModal.classList.remove('flex');
+        });
+      });
+      // Cerrar al hacer clic fuera
+      if (viewModal) {
+        viewModal.addEventListener('click', (e) => {
+          if (e.target === viewModal) {
+            viewModal.classList.add('hidden');
+            viewModal.classList.remove('flex');
+          }
+        });
+      }
+
+      // Modal editar cuarto
+      const editModal = document.getElementById('editar-cuarto-modal');
+      const closeEditBtns = document.querySelectorAll('[data-modal-hide="editar-cuarto-modal"]');
+      closeEditBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          editModal.classList.add('hidden');
+          editModal.classList.remove('flex');
+        });
+      });
+      if (editModal) {
+        editModal.addEventListener('click', (e) => {
+          if (e.target === editModal) {
+            editModal.classList.add('hidden');
+            editModal.classList.remove('flex');
+          }
+        });
+      }
+    });
+  let currentFilter = 'todos';
+
+  // Buscador
+  document.getElementById("searchInput").addEventListener("input", function (e) {
+    filterCuartos();
+  });
+
+  // Filtros por estado
+  document.querySelectorAll(".filter-btn").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      // Actualizar estilos de botones
+      document.querySelectorAll(".filter-btn").forEach((b) => {
+        b.classList.remove("bg-[#ef893f]", "text-white");
+        b.classList.add("bg-gray-200", "dark:bg-[#3d2a1f]", "text-gray-700", "dark:text-gray-300");
+      });
+      this.classList.remove("bg-gray-200", "dark:bg-[#3d2a1f]", "text-gray-700", "dark:text-gray-300");
+      this.classList.add("bg-[#ef893f]", "text-white");
+
+      currentFilter = this.dataset.filter;
+      filterCuartos();
+    });
+  });
+
+  function filterCuartos() {
+    const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+    const rows = document.querySelectorAll(".cuarto-row");
+    let visibleCount = 0;
+
+    rows.forEach((row) => {
+      const numero = row.dataset.numero.toLowerCase();
+      const descripcion = (row.dataset.descripcion || '').toLowerCase();
+      const inquilino = (row.dataset.inquilino || '').toLowerCase();
+      const piso = (row.dataset.piso || '').toLowerCase();
+      const estado = row.dataset.estado;
+
+      const matchesSearch = numero.includes(searchTerm) || 
+                           descripcion.includes(searchTerm) || 
+                           inquilino.includes(searchTerm) ||
+                           piso.includes(searchTerm);
+      const matchesFilter = currentFilter === 'todos' || estado === currentFilter;
+
+      if (matchesSearch && matchesFilter) {
+        row.style.display = "";
+        visibleCount++;
+      } else {
+        row.style.display = "none";
+      }
+    });
+    
+    // Actualizar contador
+    document.getElementById("cuartos-count").textContent = visibleCount;
+  }
+
+  // Ver detalles y editar con event listeners
+  document.addEventListener('DOMContentLoaded', function () {
+    // Ver detalles
+    document.querySelectorAll('.view-btn').forEach((btn) => {
+      btn.addEventListener('click', async function () {
+        const id = this.dataset.id;
+        try {
+          const response = await fetch(`/cuartos/obtener/${id}`);
+          const data = await response.json();
+          if (data.error) {
+            alert(data.error);
+            return;
+          }
+          document.getElementById("view_numero").textContent = data.numero;
+          document.getElementById("view_piso").textContent = data.piso;
+          document.getElementById("view_precio").textContent = `S/${data.precio}`;
+          document.getElementById("view_descripcion").textContent = data.descripcion || 'Sin descripción';
+          document.getElementById("view_inquilino").textContent = data.inquilino || 'Sin inquilino';
+          // Estado con colores
+          const estadoEl = document.getElementById("view_estado");
+          estadoEl.textContent = data.estado.charAt(0).toUpperCase() + data.estado.slice(1);
+          estadoEl.className = 'px-3 py-1 rounded-full text-xs font-medium ';
+          if (data.estado === 'disponible') {
+            estadoEl.className += 'bg-green-500 text-white';
+          } else if (data.estado === 'ocupado') {
+            estadoEl.className += 'bg-[#ef893f] text-white';
+          } else {
+            estadoEl.className += 'bg-red-500 text-white';
+          }
+          // Mostrar modal
+          const modal = document.getElementById("ver-cuarto-modal");
+          modal.classList.remove("hidden");
+          modal.classList.add("flex");
+        } catch (error) {
+          console.error("Error:", error);
+          alert("Error al cargar los datos del cuarto");
+        }
+      });
+    });
+    // Editar
+    document.querySelectorAll('.edit-btn').forEach((btn) => {
+      btn.addEventListener('click', async function () {
+        const id = this.dataset.id;
+        try {
+          const response = await fetch(`/cuartos/obtener/${id}`);
+          const data = await response.json();
+          if (data.error) {
+            alert(data.error);
+            return;
+          }
+          document.getElementById("edit_numero").value = data.numero;
+          document.getElementById("edit_piso").value = data.piso;
+          document.getElementById("edit_precio").value = data.precio;
+          document.getElementById("edit_descripcion").value = data.descripcion;
+          document.getElementById("edit_estado").value = data.estado;
+          document.getElementById("editarCuartoForm").action = `/cuartos/editar/${id}`;
+          // Mostrar modal
+          const modal = document.getElementById("editar-cuarto-modal");
+          modal.classList.remove("hidden");
+          modal.classList.add("flex");
+        } catch (error) {
+          console.error("Error:", error);
+          alert("Error al cargar los datos del cuarto");
+        }
+      });
+    });
+  });
+
+
+  // Modal de eliminar cuarto (unificado y robusto)
+  (function () {
+    const deleteModal = document.getElementById('eliminar-cuarto-modal');
+    const closeDeleteModal = document.getElementById('close-delete-modal');
+    const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+    function closeDelete() {
+      deleteModal.classList.add('hidden');
+      deleteModal.classList.remove('flex');
+    }
+    // Botones de eliminar
+    document.querySelectorAll('.delete-btn').forEach((btn) => {
+      btn.addEventListener('click', function () {
+        const id = this.dataset.id;
+        const numero = this.dataset.numero;
+        document.getElementById('delete-numero').textContent = 'Cuarto ' + numero;
+        document.getElementById('eliminarCuartoForm').action = `/cuartos/eliminar/${id}`;
+        deleteModal.classList.remove('hidden');
+        deleteModal.classList.add('flex');
+      });
+    });
+    // Botón X
+    if (closeDeleteModal) closeDeleteModal.onclick = closeDelete;
+    // Botón cancelar
+    if (cancelDeleteBtn) cancelDeleteBtn.onclick = closeDelete;
+    // Clic fuera del modal
+    if (deleteModal) {
+      deleteModal.addEventListener('click', (e) => {
+        if (e.target === deleteModal) closeDelete();
+      });
+    }
+  })();
+
+  // Abrir modal de agregar
+  document.querySelectorAll("[data-modal-toggle]").forEach((button) => {
+    button.addEventListener("click", function () {
+      const modalId = this.getAttribute("data-modal-target");
+      const modal = document.getElementById(modalId);
+      modal.classList.toggle("hidden");
+      modal.classList.toggle("flex");
+    });
+  });
+</script>
+{% endblock %}
