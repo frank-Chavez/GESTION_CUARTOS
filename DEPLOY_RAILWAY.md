@@ -3,12 +3,13 @@
 Esta guía muestra los pasos concretos para desplegar esta aplicación en Railway y asegurarte de que los datos (SQLite) no se pierdan cuando el contenedor se reinicie o se redeploye.
 
 Resumen rápido
+
 - Si NO configuras almacenamiento persistente en Railway, el archivo SQLite se perderá cuando el contenedor sea recreado. NO uses el despliegue sin persistencia para producción.
 - Para que NO se reinicien los datos: añade un volumen persistente en Railway y apunta `DATABASE_URL` a `/data/database.db`.
 
 Pasos detallados
 
-1) Preparar el repositorio
+1. Preparar el repositorio
 
 - Revisa que `requirements.txt` contenga todas las dependencias necesarias (ya incluye `Flask`, `Flask-WTF`, `WTForms`, `gunicorn`, `Werkzeug`).
 - Revisa que `Procfile` exista con algo similar a:
@@ -17,7 +18,7 @@ Pasos detallados
 web: gunicorn app:app -b 0.0.0.0:$PORT -w 2
 ```
 
-2) Crear el proyecto en Railway y conectar GitHub
+2. Crear el proyecto en Railway y conectar GitHub
 
 - Abre https://railway.app/ y entra con tu cuenta.
 - Crea un proyecto nuevo → `Deploy from GitHub`.
@@ -26,13 +27,13 @@ web: gunicorn app:app -b 0.0.0.0:$PORT -w 2
 
 Railway detectará automáticamente que es un proyecto Python y usará `requirements.txt` y `Procfile`.
 
-3) Añadir almacenamiento persistente (IMPORTANTE)
+3. Añadir almacenamiento persistente (IMPORTANTE)
 
 - En el panel del proyecto, ve a `Plugins` o `Add Plugin`.
 - Añade `Persistent Storage` o `Volume` (nombre exacto puede variar según la UI de Railway).
 - Mapea el volumen al directorio `/data` dentro del contenedor (opción que Railway suele ofrecer).
 
-4) Configurar variables de entorno (Environment Variables)
+4. Configurar variables de entorno (Environment Variables)
 
 - En el panel del proyecto ve a `Variables` (Environment) y añade:
 
@@ -43,7 +44,7 @@ Railway detectará automáticamente que es un proyecto Python y usará `requirem
 
 Nota: `database.py` en este repo respeta `DATABASE_URL` y prefiere `/data/database.db` cuando existe, por eso con esto el archivo SQLite se guardará en el volumen persistente.
 
-5) Despliegue y verificación
+5. Despliegue y verificación
 
 - Tras guardar las variables, Railway hará un build automático o puedes forzarlo con `Deploy` → `Redeploy`.
 - Abre la URL pública que Railway proporciona y realiza algunas acciones (crear un inquilino, registrar pagos, etc.).
@@ -62,7 +63,7 @@ Verificar persistencia:
 - Tras el redeploy, revisa la app: los datos que creaste deben seguir presentes.
 - Si no aparecen, revisa los logs (Railway → Logs) para errores de escritura en `/data` o errores de path.
 
-6) Alternativa (recomendada para producción): usar Postgres
+6. Alternativa (recomendada para producción): usar Postgres
 
 - Para una solución más sólida en producción, añade el plugin PostgreSQL de Railway en `Plugins`.
 - Cambia la configuración para usar Postgres. Opciones:
@@ -70,7 +71,7 @@ Verificar persistencia:
   - O usar `psycopg2-binary` y reescribir `database.py` para conectar a Postgres.
 - Ventajas: seguridad, backups, conexiones gestionadas y persistencia sin preocuparse por volúmenes.
 
-7) Cosas a tener en cuenta
+7. Cosas a tener en cuenta
 
 - Backups: incluso con volumen persistente, considera descargar periódicamente `database.db` o usar Postgres y su snapshot.
 - Inicialización: la app ejecuta `script.sql` en el primer arranque si la DB está vacía — esto es correcto para crear tablas y un admin por defecto.
