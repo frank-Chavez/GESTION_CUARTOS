@@ -62,11 +62,11 @@ def index():
     vapid_public_key = None
     try:
         base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-        vapid_file = os.path.join(base_dir, 'vapid_keys.json')
+        vapid_file = os.path.join(base_dir, "vapid_keys.json")
         if os.path.exists(vapid_file):
-            with open(vapid_file, 'r', encoding='utf-8') as f:
+            with open(vapid_file, "r", encoding="utf-8") as f:
                 vk = json.load(f)
-                vapid_public_key = vk.get('publicKey')
+                vapid_public_key = vk.get("publicKey")
     except Exception:
         vapid_public_key = None
     cursor.execute("SELECT COUNT(*) FROM cuartos WHERE estado = 'ocupado'")
@@ -82,7 +82,7 @@ def index():
         cursor.execute("SELECT nombre, usuario, rol, fecha_creacion FROM usuarios WHERE id = ?", (usuario_id,))
         usuario = cursor.fetchone()
 
-        vapid_public_key=vapid_public_key,
+        vapid_public_key = (vapid_public_key,)
     cursor.close()
     conn.close()
 
@@ -172,77 +172,80 @@ def editar_perfil():
 
     return redirect(url_for("config.index"))
 
-@config_bp.route('/push/subscribe', methods=['POST'])
+
+@config_bp.route("/push/subscribe", methods=["POST"])
 def push_subscribe():
     from flask import session
 
-    if not session.get('user_id'):
-        return jsonify({'ok': False, 'message': 'No autenticado'}), 401
+    if not session.get("user_id"):
+        return jsonify({"ok": False, "message": "No autenticado"}), 401
 
     data = request.get_json() or {}
-    endpoint = data.get('endpoint')
-    keys = data.get('keys') or {}
-    p256dh = keys.get('p256dh')
-    auth = keys.get('auth')
+    endpoint = data.get("endpoint")
+    keys = data.get("keys") or {}
+    p256dh = keys.get("p256dh")
+    auth = keys.get("auth")
 
     if not endpoint or not p256dh or not auth:
-        return jsonify({'ok': False, 'message': 'Suscripción inválida'}), 400
+        return jsonify({"ok": False, "message": "Suscripción inválida"}), 400
 
     try:
         with conection() as conn:
             cur = conn.cursor()
-            cur.execute('CREATE TABLE IF NOT EXISTS push_subscriptions (user_id INTEGER, endpoint TEXT PRIMARY KEY, p256dh TEXT, auth TEXT)')
-            cur.execute('INSERT OR REPLACE INTO push_subscriptions (user_id, endpoint, p256dh, auth) VALUES (?, ?, ?, ?)', (session.get('user_id'), endpoint, p256dh, auth))
+            cur.execute(
+                "CREATE TABLE IF NOT EXISTS push_subscriptions (user_id INTEGER, endpoint TEXT PRIMARY KEY, p256dh TEXT, auth TEXT)"
+            )
+            cur.execute(
+                "INSERT OR REPLACE INTO push_subscriptions (user_id, endpoint, p256dh, auth) VALUES (?, ?, ?, ?)",
+                (session.get("user_id"), endpoint, p256dh, auth),
+            )
             conn.commit()
-        return jsonify({'ok': True, 'message': 'Suscripción guardada'}), 200
+        return jsonify({"ok": True, "message": "Suscripción guardada"}), 200
     except Exception as e:
-        return jsonify({'ok': False, 'message': str(e)}), 500
+        return jsonify({"ok": False, "message": str(e)}), 500
 
 
-@config_bp.route('/push/send_test', methods=['POST'])
+@config_bp.route("/push/send_test", methods=["POST"])
 def push_send_test():
     from flask import session
 
-    if not session.get('user_id'):
-        return jsonify({'ok': False, 'message': 'No autenticado'}), 401
+    if not session.get("user_id"):
+        return jsonify({"ok": False, "message": "No autenticado"}), 401
 
     # Intentar obtener una suscripción para el usuario
     try:
         with conection() as conn:
             cur = conn.cursor()
-            cur.execute('SELECT endpoint, p256dh, auth FROM push_subscriptions WHERE user_id = ?', (session.get('user_id'),))
+            cur.execute(
+                "SELECT endpoint, p256dh, auth FROM push_subscriptions WHERE user_id = ?", (session.get("user_id"),)
+            )
             row = cur.fetchone()
             if not row:
-                return jsonify({'ok': False, 'message': 'No hay suscripciones para este usuario'}), 404
-            sub = {
-                'endpoint': row[0],
-                'keys': {
-                    'p256dh': row[1],
-                    'auth': row[2]
-                }
-            }
+                return jsonify({"ok": False, "message": "No hay suscripciones para este usuario"}), 404
+            sub = {"endpoint": row[0], "keys": {"p256dh": row[1], "auth": row[2]}}
     except Exception as e:
-        return jsonify({'ok': False, 'message': str(e)}), 500
+        return jsonify({"ok": False, "message": str(e)}), 500
 
     # Cargar clave privada VAPID
     try:
-        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-        vapid_file = os.path.join(base_dir, 'vapid_keys.json')
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        vapid_file = os.path.join(base_dir, "vapid_keys.json")
         if not os.path.exists(vapid_file):
-            return jsonify({'ok': False, 'message': 'VAPID keys no configuradas'}), 500
-        with open(vapid_file, 'r', encoding='utf-8') as f:
+            return jsonify({"ok": False, "message": "VAPID keys no configuradas"}), 500
+        with open(vapid_file, "r", encoding="utf-8") as f:
             vk = json.load(f)
-        vapid_private_pem = vk.get('privateKeyPem')
-        vapid_claims = { 'sub': 'mailto:admin@example.com' }
+        vapid_private_pem = vk.get("privateKeyPem")
+        vapid_claims = {"sub": "mailto:admin@example.com"}
 
         # Enviar notificación de prueba
-        payload = json.dumps({'title': 'Prueba', 'body': 'Notificación de prueba desde Sistema Gestión Cuartos'})
+        payload = json.dumps({"title": "Prueba", "body": "Notificación de prueba desde Sistema Gestión Cuartos"})
         webpush(subscription_info=sub, data=payload, vapid_private_key=vapid_private_pem, vapid_claims=vapid_claims)
-        return jsonify({'ok': True, 'message': 'Notificación enviada'}), 200
+        return jsonify({"ok": True, "message": "Notificación enviada"}), 200
     except WebPushException as ex:
-        return jsonify({'ok': False, 'message': str(ex)}), 500
+        return jsonify({"ok": False, "message": str(ex)}), 500
     except Exception as e:
-        return jsonify({'ok': False, 'message': str(e)}), 500
+        return jsonify({"ok": False, "message": str(e)}), 500
+
 
 # Endpoints para crear/eliminar acceso directo en Escritorio
 @config_bp.route("/shortcut/create", methods=["POST"])

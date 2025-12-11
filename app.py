@@ -5,6 +5,8 @@ from wtforms import StringField, DecimalField, BooleanField, DateField
 from wtforms.validators import DataRequired, NumberRange, Regexp
 from database import conection
 from datetime import datetime, timedelta
+
+# removed remember-me token imports
 import os
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -84,6 +86,9 @@ def ensure_db_initialized():
 ensure_db_initialized()
 
 
+# Remember-me/token-based persistence removed per user request
+
+
 class InquilinoForm(FlaskForm):
     nombre = StringField(validators=[DataRequired()])
     apellido = StringField(validators=[DataRequired()])
@@ -100,7 +105,7 @@ class InquilinoForm(FlaskForm):
 class LoginForm(FlaskForm):
     usuario = StringField(validators=[DataRequired()])
     password = StringField(validators=[DataRequired()])
-    remember = BooleanField()
+    # remember field removed: Mantener sesión iniciada deshabilitado
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -118,30 +123,9 @@ def loguin():
         conn.close()
         if user and check_password_hash(user[2], password):
             session["user_id"] = user[0]
-            # Marcar la sesión como permanente sólo si el usuario lo solicita
-            # (checkbox 'remember' en el formulario)
-            try:
-                remember = False
-                if hasattr(form, 'remember'):
-                    remember = bool(form.remember.data)
-                else:
-                    remember = bool(request.form.get('remember'))
-                session.permanent = bool(remember)
-            except Exception:
-                session.permanent = False
-
-            # Prepare response so we can set an auxiliary persistent cookie
-            resp = make_response(redirect(url_for("dashboard")))
-            try:
-                if session.permanent:
-                    max_age = int(app.permanent_session_lifetime.total_seconds())
-                    resp.set_cookie('remembered', '1', max_age=max_age, httponly=False, samesite=app.config.get('SESSION_COOKIE_SAMESITE','Lax'))
-                else:
-                    # delete cookie if exists
-                    resp.set_cookie('remembered', '', expires=0)
-            except Exception:
-                pass
-            return resp
+            # Mantener sesión eliminado: no persistimos entre cierres del navegador
+            session.permanent = False
+            return redirect(url_for("dashboard"))
         else:
             error = "Usuario o contraseña incorrectos"
     return render_template("loguin.html", form=form, error=error)
@@ -154,7 +138,7 @@ def logout():
     if not user_id:
         return redirect(url_for("loguin"))
 
-    confirm_password = request.form.get('confirm_password')
+    confirm_password = request.form.get("confirm_password")
     if not confirm_password:
         flash("Debes confirmar tu contraseña para cerrar sesión", "warning")
         return redirect(url_for("dashboard"))
@@ -178,7 +162,8 @@ def logout():
 
     stored_hash = row[0]
     if check_password_hash(stored_hash, confirm_password):
-        session.pop("user_id", None)
+        # Clear session
+        session.clear()
         flash("Sesión cerrada", "success")
         return redirect(url_for("loguin"))
     else:
