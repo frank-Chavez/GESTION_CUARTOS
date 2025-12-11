@@ -114,7 +114,8 @@ def index():
     conn.close()
 
     form = PagoForm()
-    form.id_inquilino.choices = [(i[0], i[1]) for i in inquilinos]
+    # `inquilinos` rows are dicts (from database.row_factory), use keys
+    form.id_inquilino.choices = [(i['id'], i.get('nombre_completo') or (i.get('nombre') + ' ' + i.get('apellido'))) for i in inquilinos]
 
     return render_template("pagos.html", pagos=pagos, form=form, inquilinos=inquilinos, stats=stats)
 
@@ -130,7 +131,7 @@ def agregar():
     inquilinos = cursor.fetchall()
 
     form = PagoForm()
-    form.id_inquilino.choices = [(i[0], i[1]) for i in inquilinos]
+    form.id_inquilino.choices = [(i['id'], i.get('nombre') + ' ' + i.get('apellido')) for i in inquilinos]
 
     if not form.validate_on_submit():
         first_error = next(iter(form.errors.values()), ["Datos inválidos"])[0]
@@ -147,7 +148,7 @@ def agregar():
     # Determinar si el pago es puntual
     cursor.execute("SELECT dia_pago FROM inquilinos WHERE id = ?", (id_inquilino,))
     result = cursor.fetchone()
-    dia_pago = result[0] if result else 1
+    dia_pago = result['dia_pago'] if result and 'dia_pago' in result else 1
 
     fecha_pago = form.fecha.data
     puntual = 1 if fecha_pago.day <= dia_pago else 0

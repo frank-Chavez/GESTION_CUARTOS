@@ -192,42 +192,42 @@ block content %}
           {% for pago in pagos %}
           <tr
             class="pago-row border-b border-gray-100 dark:border-dark-border/50 hover:bg-gray-50 dark:hover:bg-[#201813] transition-colors"
-            data-inquilino="{{ pago[1] }} {{ pago[2] }}"
-            data-cuarto="{{ pago[3] }}"
-            data-estado="{{ pago[9]|lower }}"
+            data-inquilino="{{ pago['nombre'] }} {{ pago['apellido'] }}"
+            data-cuarto="{{ pago['cuarto'] }}"
+            data-estado="{{ pago['estado']|lower }}"
           >
             <td class="py-4 px-4">
               <span class="text-gray-900 dark:text-white font-medium"
-                >{{ pago[1] }} {{ pago[2] }}</span
+                >{{ pago['nombre'] }} {{ pago['apellido'] }}</span
               >
             </td>
-            <td class="py-4 px-4 text-[#ef893f] font-medium">{{ pago[3] }}</td>
+            <td class="py-4 px-4 text-[#ef893f] font-medium">{{ pago['cuarto'] }}</td>
             <td
               class="py-4 px-4 text-gray-700 dark:text-gray-300 font-semibold"
             >
-              S/.{{ "%.2f"|format(pago[4]) }}
+              S/.{{ "%.2f"|format(pago['monto_mensual']) }}
             </td>
             <td
               class="py-4 px-4 text-green-600 dark:text-green-400 font-semibold"
             >
-              S/.{{ "%.2f"|format(pago[7]) }}
+              S/.{{ "%.2f"|format(pago['monto_pagado']) }}
             </td>
             <td class="py-4 px-4 text-red-500 dark:text-red-400 font-semibold">
-              S/.{{ "%.2f"|format(pago[8]) }}
+              S/.{{ "%.2f"|format(pago['monto_faltante']) }}
             </td>
             <td class="py-4 px-4 text-gray-700 dark:text-gray-300">
-              {{ pago[6] }}
+              {{ pago['fecha_ingreso'] }}
             </td>
             <td class="py-4 px-4 text-gray-700 dark:text-gray-300">
-              {{ pago[10] }}
+              {{ pago['fecha_vencimiento'] }}
             </td>
             <td class="py-4 px-4">
-              {% if pago[9] == 'Pagado' %}
+              {% if pago['estado'] == 'Pagado' %}
               <span
                 class="px-3 py-1 rounded-full text-xs font-medium bg-green-500 text-white"
                 >Pagado</span
               >
-              {% elif pago[9] == 'Atrasado' %}
+              {% elif pago['estado'] == 'Atrasado' %}
               <span
                 class="px-3 py-1 rounded-full text-xs font-medium bg-red-500 text-white"
                 >Atrasado</span
@@ -340,7 +340,7 @@ block content %}
             >
               <option value="">Seleccionar inquilino</option>
               {% for inquilino in inquilinos %}
-              <option value="{{ inquilino[0] }}">{{ inquilino[1] }}</option>
+              <option value="{{ inquilino['id'] }}">{{ inquilino.get('nombre_completo') or (inquilino['nombre'] ~ ' ' ~ inquilino['apellido']) }}</option>
               {% endfor %}
             </select>
           </div>
