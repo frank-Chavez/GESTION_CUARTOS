@@ -22,6 +22,14 @@ app.config["DEBUG"] = os.getenv("FLASK_DEBUG") == "1"
 # Persistir la sesión entre cierres del navegador (por defecto 30 días)
 app.permanent_session_lifetime = timedelta(days=int(os.getenv("PERMANENT_DAYS", "30")))
 
+# Cookie/session settings (can be adjusted via env vars)
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SECURE=os.getenv("SESSION_COOKIE_SECURE", "0") == "1",
+    SESSION_COOKIE_SAMESITE=os.getenv("SESSION_COOKIE_SAMESITE", "Lax"),
+    SESSION_REFRESH_EACH_REQUEST=True,
+)
+
 # Inicializar CSRFProtect
 csrf = CSRFProtect(app)
 
@@ -121,8 +129,6 @@ def loguin():
                     # HTML checkbox sends 'on' when checked; treat any present value as True
                     remember = bool(request.form.get('remember'))
                 session.permanent = bool(remember)
-                # DEBUG: flash temporary info to verify checkbox binding
-                flash(f"DEBUG: remember={remember}", "info")
             except Exception:
                 session.permanent = False
             return redirect(url_for("dashboard"))
