@@ -70,6 +70,23 @@
   window.toggleDarkMode = function () {
     try {
       const isDark = document.documentElement.classList.contains(DARK_CLASS);
+      // If theme is locked by user preference, prevent switching away from locked value
+      try {
+        const locked = localStorage.getItem(LOCK_KEY);
+        const lockedTheme = localStorage.getItem(STORAGE_KEY);
+        if (locked === '1' && lockedTheme === 'dark' && isDark) {
+          // already dark and locked -> do nothing
+          console.debug('[dark-mode] theme is locked to dark; ignoring toggle');
+          return;
+        }
+        if (locked === '1' && lockedTheme === 'light' && !isDark) {
+          console.debug('[dark-mode] theme is locked to light; ignoring toggle');
+          return;
+        }
+      } catch (e) {
+        // ignore localStorage issues
+      }
+
       console.debug('[dark-mode] toggleDarkMode current ->', isDark ? 'dark' : 'light');
       setTheme(!isDark, true);
       console.debug('[dark-mode] toggleDarkMode new ->', !isDark ? 'dark' : 'light');
@@ -78,12 +95,11 @@
     }
   };
 
-  // Backwards-compatible API: allow setting/removing a stored lock flag,
-  // but it no longer prevents the header toggle from working.
+  // Allow external code to set/unset a lock on theme preference
   window.setThemeLock = function (lock) {
     try {
-      if (lock) localStorage.setItem('theme_locked', '1');
-      else localStorage.removeItem('theme_locked');
+      if (lock) localStorage.setItem(LOCK_KEY, '1');
+      else localStorage.removeItem(LOCK_KEY);
     } catch (e) {}
   };
 
