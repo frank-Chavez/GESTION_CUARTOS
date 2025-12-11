@@ -92,6 +92,7 @@ class InquilinoForm(FlaskForm):
 class LoginForm(FlaskForm):
     usuario = StringField(validators=[DataRequired()])
     password = StringField(validators=[DataRequired()])
+    remember = BooleanField()
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -109,8 +110,18 @@ def loguin():
         conn.close()
         if user and check_password_hash(user[2], password):
             session["user_id"] = user[0]
-            # Marcar la sesión como permanente para que persista al cerrar el navegador
-            session.permanent = True
+            # Marcar la sesión como permanente sólo si el usuario lo solicita
+            # (checkbox 'remember' en el formulario)
+            try:
+                remember = False
+                # preferir el campo del WTForm cuando se usa, fallback a request.form
+                if hasattr(form, 'remember'):
+                    remember = bool(form.remember.data)
+                else:
+                    remember = bool(request.form.get('remember'))
+                session.permanent = bool(remember)
+            except Exception:
+                session.permanent = False
             return redirect(url_for("dashboard"))
         else:
             error = "Usuario o contraseña incorrectos"
