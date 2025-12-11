@@ -499,18 +499,6 @@
         } else if (serverPref === 'light') {
           darkSwitch.checked = false;
         }
-        // Apply server preference immediately to localStorage and UI
-        if (serverPref === 'dark' || serverPref === 'light') {
-          try { localStorage.setItem('theme', serverPref); } catch (e) {}
-          try { localStorage.setItem('theme_locked', '1'); } catch (e) {}
-          try {
-            const current = window.getTheme ? window.getTheme() : null;
-            if (serverPref === 'dark' && current !== 'dark') window.toggleDarkMode && window.toggleDarkMode();
-            if (serverPref === 'light' && current === 'dark') window.toggleDarkMode && window.toggleDarkMode();
-            // Ensure the lock API is set as well
-            try { window.setThemeLock && window.setThemeLock(true); } catch (e) {}
-          } catch (e) {}
-        }
       } catch (e) {}
 
       darkSwitch.addEventListener('change', async function(){
@@ -531,8 +519,6 @@
               if (wantsDark && current !== 'dark') window.toggleDarkMode && window.toggleDarkMode();
               if (!wantsDark && current === 'dark') window.toggleDarkMode && window.toggleDarkMode();
             } catch (e) {}
-            // Persist lock so header toggle cannot flip away from user's choice
-            try { localStorage.setItem('theme_locked', '1'); window.setThemeLock && window.setThemeLock(true); } catch (e) {}
           }
         }catch(e){ alert('Error al comunicarse con el servidor'); darkSwitch.checked = !wantsDark }
         finally{ darkSwitch.disabled = false }
