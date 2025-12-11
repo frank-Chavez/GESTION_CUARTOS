@@ -6,7 +6,6 @@ CREATE TABLE usuarios (
     rol TEXT NOT NULL CHECK(rol IN ('admin', 'usuario')),
     fecha_creacion TEXT NOT NULL
 );
-CREATE TABLE sqlite_sequence(name, seq);
 CREATE TABLE inquilinos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT NOT NULL,
