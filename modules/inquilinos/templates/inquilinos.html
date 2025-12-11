@@ -880,9 +880,9 @@ block content %}
             {% if cuartos_disponibles|length > 0 %}
             <option value="" data-precio="0">Seleccionar cuarto</option>
             {% for cuarto in cuartos_disponibles %}
-            <option value="{{ cuarto[1] }}" data-precio="{{ cuarto[3] }}">
-              {{ cuarto[1] }} - Piso {{ cuarto[2] }} (S/{{
-              "%.2f"|format(cuarto[3]) }})
+            <option value="{{ cuarto['numero'] }}" data-precio="{{ cuarto['precio'] }}">
+              {{ cuarto['numero'] }} - Piso {{ cuarto['piso'] }} (S/{{
+              "%.2f"|format(cuarto['precio']) }})
             </option>
             {% endfor %} {% else %}
             <option value="" data-precio="0">No hay cuartos disponibles</option>

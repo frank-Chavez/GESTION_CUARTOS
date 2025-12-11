@@ -424,11 +424,11 @@ block content %}
                           </option>
                           {% for cuarto in cuartos_disponibles %}
                           <option
-                            value="{{ cuarto[1] }}"
-                            data-precio="{{ cuarto[3] }}"
+                            value="{{ cuarto['numero'] }}"
+                            data-precio="{{ cuarto['precio'] }}"
                           >
-                            {{ cuarto[1] }} - Piso {{ cuarto[2] }} (S/{{
-                            "%.2f"|format(cuarto[3]) }})
+                            {{ cuarto['numero'] }} - Piso {{ cuarto['piso'] }} (S/{{
+                            "%.2f"|format(cuarto['precio']) }})
                           </option>
                           {% endfor %} {% else %}
                           <option value="" data-precio="0">
@@ -450,7 +450,7 @@ block content %}
                           min="0.01"
                           step="0.01"
                           readonly
-                          class="border border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg w-full placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors bg-gray-100 dark:bg-[#1a1410]"
+                          class="border border-gray-300 dark:border-dark-border dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg w-full placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors bg-gray-100 dark:bg-[#1a1410]"
                           placeholder="S/.100"
                           required
                         />
