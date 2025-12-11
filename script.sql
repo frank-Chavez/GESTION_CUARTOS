@@ -1,4 +1,4 @@
-CREATE TABLE usuarios (
+CREATE TABLE IF NOT EXISTS usuarios (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT NOT NULL,
     usuario TEXT NOT NULL UNIQUE,
@@ -6,7 +6,7 @@ CREATE TABLE usuarios (
     rol TEXT NOT NULL CHECK(rol IN ('admin', 'usuario')),
     fecha_creacion TEXT NOT NULL
 );
-CREATE TABLE inquilinos (
+CREATE TABLE IF NOT EXISTS inquilinos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT NOT NULL,
     dni TEXT NOT NULL UNIQUE,
@@ -19,7 +19,7 @@ CREATE TABLE inquilinos (
     apellido TEXT,
     FOREIGN KEY (id_cuarto) REFERENCES cuartos(id)
 );
-CREATE TABLE pagos (
+CREATE TABLE IF NOT EXISTS pagos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_inquilino INTEGER NOT NULL,
     fecha TEXT NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE pagos (
     puntual BOOLEAN NOT NULL,
     FOREIGN KEY (id_inquilino) REFERENCES inquilinos(id)
 );
-CREATE TABLE cuartos (
+CREATE TABLE IF NOT EXISTS cuartos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     numero TEXT NOT NULL UNIQUE,
     descripcion TEXT,
