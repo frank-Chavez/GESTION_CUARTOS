@@ -86,6 +86,39 @@ def ensure_db_initialized():
 ensure_db_initialized()
 
 
+def ensure_schema_migrations():
+    """Apply lightweight schema migrations for existing databases.
+
+    This checks for columns that newer code expects and adds them if missing.
+    It keeps migrations minimal and safe (uses ALTER TABLE ADD COLUMN).
+    """
+    try:
+        conn = conection()
+        cur = conn.cursor()
+        # Check cuartos table columns
+        cur.execute("PRAGMA table_info('cuartos')")
+        cols = [r[1] for r in cur.fetchall()]
+        if 'piso' not in cols:
+            try:
+                cur.execute("ALTER TABLE cuartos ADD COLUMN piso INTEGER DEFAULT 1")
+            except Exception:
+                pass
+        if 'precio' not in cols:
+            try:
+                cur.execute("ALTER TABLE cuartos ADD COLUMN precio REAL DEFAULT 0.0")
+            except Exception:
+                pass
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        print('Advertencia: error al aplicar migraciones ligeras de esquema:', e)
+
+
+# Ensure schema migrations run at startup to support older DBs
+ensure_schema_migrations()
+
+
 # Remember-me/token-based persistence removed per user request
 
 
