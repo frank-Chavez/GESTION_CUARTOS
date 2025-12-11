@@ -385,6 +385,16 @@
               </div>
               <div class="flex items-center justify-between py-5">
                 <div>
+                  <span class="font-semibold text-[18px]">Tema Oscuro</span><br />
+                  <span class="text-[15px] text-[#bfae9f]">Activa el modo oscuro para la interfaz</span>
+                </div>
+                <label class="switch inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="dark-mode-switch" class="sr-only noti-switch" {% if dark_mode == 'dark' %}checked{% endif %} />
+                  <span class="switch-slider"></span>
+                </label>
+              </div>
+              <div class="flex items-center justify-between py-5">
+                <div>
                   <span class="font-semibold text-[18px]">Acceso Directo</span><br />
                   <span class="text-[15px] text-[#bfae9f]">Crear un acceso directo en el Escritorio para abrir el sistema</span>
                 </div>
@@ -475,6 +485,43 @@
           }
         }catch(e){ alert('Error al comunicarse con el servidor'); notiAtras.checked = !checked }
         finally{ notiAtras.disabled = false }
+      });
+    }
+
+    // Dark mode preference
+    const darkSwitch = document.getElementById('dark-mode-switch');
+    if (darkSwitch) {
+      // If server passed a preference, respect it; otherwise keep current theme
+      try {
+        const serverPref = '{{ dark_mode or "" }}';
+        if (serverPref === 'dark') {
+          darkSwitch.checked = true;
+        } else if (serverPref === 'light') {
+          darkSwitch.checked = false;
+        }
+      } catch (e) {}
+
+      darkSwitch.addEventListener('change', async function(){
+        const wantsDark = !!darkSwitch.checked;
+        darkSwitch.disabled = true;
+        try{
+          // send preference as 'dark' or 'light'
+          const val = wantsDark ? 'dark' : 'light';
+          const r = await postPref('dark_mode', val);
+          if (!r.ok) {
+            const j = await r.json().catch(()=>({message:'Error'}));
+            alert('No se pudo guardar la preferencia: ' + (j.message || r.statusText));
+            darkSwitch.checked = !wantsDark;
+          } else {
+            // Apply theme in UI: toggle only if current theme differs
+            try {
+              const current = window.getTheme ? window.getTheme() : null;
+              if (wantsDark && current !== 'dark') window.toggleDarkMode && window.toggleDarkMode();
+              if (!wantsDark && current === 'dark') window.toggleDarkMode && window.toggleDarkMode();
+            } catch (e) {}
+          }
+        }catch(e){ alert('Error al comunicarse con el servidor'); darkSwitch.checked = !wantsDark }
+        finally{ darkSwitch.disabled = false }
       });
     }
   })();

@@ -8,13 +8,16 @@ from database import conection
 import os
 import subprocess
 import json
-from pywebpush import webpush, WebPushException
+
 from typing import Optional
 
 # Crear el Blueprint
 config_bp = Blueprint(
     "config", __name__, template_folder="templates", static_folder="static", url_prefix="/configuracion"
 )
+
+
+# VAPID/push helper removed (push feature disabled)
 
 
 class CuartoForm(FlaskForm):
@@ -58,17 +61,7 @@ def index():
     cursor.execute("SELECT COUNT(*) FROM cuartos WHERE estado = 'disponible'")
     cuartos_disponibles = cursor.fetchone()[0] or 0
 
-    # Cargar clave pública VAPID para uso en la plantilla (si existe)
-    vapid_public_key = None
-    try:
-        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-        vapid_file = os.path.join(base_dir, 'vapid_keys.json')
-        if os.path.exists(vapid_file):
-            with open(vapid_file, 'r', encoding='utf-8') as f:
-                vk = json.load(f)
-                vapid_public_key = vk.get('publicKey')
-    except Exception:
-        vapid_public_key = None
+    # VAPID/push feature removed — no se carga clave pública
     cursor.execute("SELECT COUNT(*) FROM cuartos WHERE estado = 'ocupado'")
     cuartos_ocupados = cursor.fetchone()[0] or 0
 
@@ -81,8 +74,7 @@ def index():
     if usuario_id:
         cursor.execute("SELECT nombre, usuario, rol, fecha_creacion FROM usuarios WHERE id = ?", (usuario_id,))
         usuario = cursor.fetchone()
-
-        vapid_public_key=vapid_public_key,
+        # dejar vapid_public_key tal como se leyó arriba (no envolver en tupla)
     cursor.close()
     conn.close()
 
@@ -98,6 +90,7 @@ def index():
     # Cargar preferencias de usuario (si aplica)
     noti_pendientes = False
     noti_atrasados = False
+    dark_mode = None
     try:
         if usuario_id:
             # helper inline: obtener setting
@@ -116,11 +109,20 @@ def index():
 
             v1 = _get_setting(usuario_id, "noti_pendientes")
             v2 = _get_setting(usuario_id, "noti_atrasados")
+            v3 = _get_setting(usuario_id, "dark_mode")
             noti_pendientes = True if v1 == "1" else False
             noti_atrasados = True if v2 == "1" else False
+            # dark_mode: store as 'dark' or 'light' (fallback None)
+            if v3 == 'dark':
+                dark_mode = 'dark'
+            elif v3 == 'light':
+                dark_mode = 'light'
+            else:
+                dark_mode = None
     except Exception:
         noti_pendientes = False
         noti_atrasados = False
+        dark_mode = None
 
     return render_template(
         "config.html",
@@ -134,6 +136,7 @@ def index():
         shortcut_exists=shortcut_exists,
         noti_pendientes=noti_pendientes,
         noti_atrasados=noti_atrasados,
+        dark_mode=dark_mode,
     )
 
 
@@ -172,77 +175,37 @@ def editar_perfil():
 
     return redirect(url_for("config.index"))
 
-@config_bp.route('/push/subscribe', methods=['POST'])
+
+@config_bp.route("/push/subscribe", methods=["POST"])
 def push_subscribe():
     from flask import session
 
-    if not session.get('user_id'):
-        return jsonify({'ok': False, 'message': 'No autenticado'}), 401
+    if not session.get("user_id"):
+        return jsonify({"ok": False, "message": "No autenticado"}), 401
 
     data = request.get_json() or {}
-    endpoint = data.get('endpoint')
-    keys = data.get('keys') or {}
-    p256dh = keys.get('p256dh')
-    auth = keys.get('auth')
+    endpoint = data.get("endpoint")
+    keys = data.get("keys") or {}
+    p256dh = keys.get("p256dh")
+    auth = keys.get("auth")
 
     if not endpoint or not p256dh or not auth:
-        return jsonify({'ok': False, 'message': 'Suscripción inválida'}), 400
+        return jsonify({"ok": False, "message": "Suscripción inválida"}), 400
 
-    try:
-        with conection() as conn:
-            cur = conn.cursor()
-            cur.execute('CREATE TABLE IF NOT EXISTS push_subscriptions (user_id INTEGER, endpoint TEXT PRIMARY KEY, p256dh TEXT, auth TEXT)')
-            cur.execute('INSERT OR REPLACE INTO push_subscriptions (user_id, endpoint, p256dh, auth) VALUES (?, ?, ?, ?)', (session.get('user_id'), endpoint, p256dh, auth))
-            conn.commit()
-        return jsonify({'ok': True, 'message': 'Suscripción guardada'}), 200
-    except Exception as e:
-        return jsonify({'ok': False, 'message': str(e)}), 500
+    # Push subscriptions removed — feature disabled
+    return jsonify({"ok": False, "message": "Push deshabilitado en este servidor"}), 404
 
 
-@config_bp.route('/push/send_test', methods=['POST'])
+@config_bp.route("/push/send_test", methods=["POST"])
 def push_send_test():
     from flask import session
 
-    if not session.get('user_id'):
-        return jsonify({'ok': False, 'message': 'No autenticado'}), 401
+    if not session.get("user_id"):
+        return jsonify({"ok": False, "message": "No autenticado"}), 401
 
-    # Intentar obtener una suscripción para el usuario
-    try:
-        with conection() as conn:
-            cur = conn.cursor()
-            cur.execute('SELECT endpoint, p256dh, auth FROM push_subscriptions WHERE user_id = ?', (session.get('user_id'),))
-            row = cur.fetchone()
-            if not row:
-                return jsonify({'ok': False, 'message': 'No hay suscripciones para este usuario'}), 404
-            sub = {
-                'endpoint': row[0],
-                'keys': {
-                    'p256dh': row[1],
-                    'auth': row[2]
-                }
-            }
-    except Exception as e:
-        return jsonify({'ok': False, 'message': str(e)}), 500
+    # Push send/test disabled
+    return jsonify({"ok": False, "message": "Push deshabilitado en este servidor"}), 404
 
-    # Cargar clave privada VAPID
-    try:
-        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-        vapid_file = os.path.join(base_dir, 'vapid_keys.json')
-        if not os.path.exists(vapid_file):
-            return jsonify({'ok': False, 'message': 'VAPID keys no configuradas'}), 500
-        with open(vapid_file, 'r', encoding='utf-8') as f:
-            vk = json.load(f)
-        vapid_private_pem = vk.get('privateKeyPem')
-        vapid_claims = { 'sub': 'mailto:admin@example.com' }
-
-        # Enviar notificación de prueba
-        payload = json.dumps({'title': 'Prueba', 'body': 'Notificación de prueba desde Sistema Gestión Cuartos'})
-        webpush(subscription_info=sub, data=payload, vapid_private_key=vapid_private_pem, vapid_claims=vapid_claims)
-        return jsonify({'ok': True, 'message': 'Notificación enviada'}), 200
-    except WebPushException as ex:
-        return jsonify({'ok': False, 'message': str(ex)}), 500
-    except Exception as e:
-        return jsonify({'ok': False, 'message': str(e)}), 500
 
 # Endpoints para crear/eliminar acceso directo en Escritorio
 @config_bp.route("/shortcut/create", methods=["POST"])
@@ -305,6 +268,10 @@ def eliminar_shortcut():
         return jsonify({"ok": False, "message": str(e)}), 500
 
 
+# NOTE: Se eliminó el resto de endpoints relacionados con notificaciones y
+# demás utilidades para dejar únicamente la funcionalidad de acceso directo
+
+
 # Endpoint para actualizar preferencias (notificaciones)
 @config_bp.route("/preferences/update", methods=["POST"])
 def update_preference():
@@ -316,11 +283,21 @@ def update_preference():
     data = request.get_json() or {}
     key = data.get("key")
     value = data.get("value")
-    if key not in ("noti_pendientes", "noti_atrasados"):
+    if key not in ("noti_pendientes", "noti_atrasados", "dark_mode"):
         return jsonify({"ok": False, "message": "Clave no válida"}), 400
 
-    # Normalizar valor a '1' o '0'
-    val = "1" if value in (True, "1", 1, "true", "True") else "0"
+    # Normalizar valor según la clave
+    if key == 'dark_mode':
+        # Accept 'dark'/'light' or booleans
+        if isinstance(value, str):
+            v = value.lower()
+            val = 'dark' if v == 'dark' else 'light'
+        else:
+            # truthy -> dark, falsy -> light
+            val = 'dark' if value in (True, 1, '1', 'true', 'True') else 'light'
+    else:
+        # Normalizar valor a '1' o '0' para notificaciones
+        val = "1" if value in (True, "1", 1, "true", "True") else "0"
 
     try:
         with conection() as conn:
