@@ -115,7 +115,13 @@ def index():
 
     form = PagoForm()
     # `inquilinos` rows are dicts (from database.row_factory), use keys
-    form.id_inquilino.choices = [(i['id'], i.get('nombre_completo') or (i.get('nombre') + ' ' + i.get('apellido'))) for i in inquilinos]
+    form.id_inquilino.choices = [
+        (
+            i['id'],
+            i.get('nombre_completo') or ((i.get('nombre') or '') + ' ' + (i.get('apellido') or '')).strip(),
+        )
+        for i in inquilinos
+    ]
 
     return render_template("pagos.html", pagos=pagos, form=form, inquilinos=inquilinos, stats=stats)
 
@@ -131,7 +137,9 @@ def agregar():
     inquilinos = cursor.fetchall()
 
     form = PagoForm()
-    form.id_inquilino.choices = [(i['id'], i.get('nombre') + ' ' + i.get('apellido')) for i in inquilinos]
+    form.id_inquilino.choices = [
+        (i['id'], ((i.get('nombre') or '') + ' ' + (i.get('apellido') or '')).strip()) for i in inquilinos
+    ]
 
     if not form.validate_on_submit():
         first_error = next(iter(form.errors.values()), ["Datos inválidos"])[0]
