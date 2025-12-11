@@ -53,10 +53,12 @@ def index():
 
     # Estadísticas generales
     cursor.execute("SELECT COUNT(*) FROM cuartos")
-    total_cuartos = cursor.fetchone()[0] or 0
+    from database import first_value
+    total_cuartos = first_value(cursor.fetchone()) or 0
 
     cursor.execute("SELECT COUNT(*) FROM cuartos WHERE estado = 'disponible'")
-    cuartos_disponibles = cursor.fetchone()[0] or 0
+    from database import first_value
+    cuartos_disponibles = first_value(cursor.fetchone()) or 0
 
     # Cargar clave pública VAPID para uso en la plantilla (si existe)
     vapid_public_key = None
@@ -70,10 +72,12 @@ def index():
     except Exception:
         vapid_public_key = None
     cursor.execute("SELECT COUNT(*) FROM cuartos WHERE estado = 'ocupado'")
-    cuartos_ocupados = cursor.fetchone()[0] or 0
+    from database import first_value
+    cuartos_ocupados = first_value(cursor.fetchone()) or 0
 
     cursor.execute("SELECT COUNT(*) FROM inquilinos")
-    total_inquilinos = cursor.fetchone()[0] or 0
+    from database import first_value
+    total_inquilinos = first_value(cursor.fetchone()) or 0
 
     # Obtener datos del usuario logueado
     usuario_id = session.get("user_id")

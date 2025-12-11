@@ -3,7 +3,7 @@ from flask_wtf import CSRFProtect
 from flask_wtf import FlaskForm
 from wtforms import StringField, DecimalField, BooleanField, DateField
 from wtforms.validators import DataRequired, NumberRange, Regexp
-from database import conection
+from database import conection, first_value
 from datetime import datetime, timedelta
 
 # removed remember-me token imports
@@ -166,8 +166,8 @@ def loguin():
         user = cursor.fetchone()
         cursor.close()
         conn.close()
-        if user and check_password_hash(user[2], password):
-            session["user_id"] = user[0]
+        if user and check_password_hash(user['password'], password):
+            session["user_id"] = user['id']
             # Mantener sesión eliminado: no persistimos entre cierres del navegador
             session.permanent = False
             return redirect(url_for("dashboard"))
@@ -260,10 +260,10 @@ ORDER BY i.nombre
 
     # Total de cuartos y cuartos ocupados
     cursor.execute("SELECT COUNT(*) FROM cuartos")
-    total_cuartos = cursor.fetchone()[0] or 0
+    total_cuartos = first_value(cursor.fetchone()) or 0
 
     cursor.execute("SELECT COUNT(*) FROM cuartos WHERE estado = 'ocupado'")
-    cuartos_ocupados = cursor.fetchone()[0] or 0
+    cuartos_ocupados = first_value(cursor.fetchone()) or 0
 
     # Ganancias del mes actual
     cursor.execute(
@@ -273,11 +273,11 @@ ORDER BY i.nombre
         WHERE strftime('%Y-%m', fecha) = strftime('%Y-%m', 'now')
     """
     )
-    ganancias_mes = cursor.fetchone()[0] or 0
+    ganancias_mes = first_value(cursor.fetchone()) or 0
 
     # Total de inquilinos activos
     cursor.execute("SELECT COUNT(*) FROM inquilinos")
-    total_inquilinos = cursor.fetchone()[0] or 0
+    total_inquilinos = first_value(cursor.fetchone()) or 0
 
     # Pagos pendientes (inquilinos sin pago en los últimos 30 días)
     cursor.execute(
@@ -293,7 +293,7 @@ ORDER BY i.nombre
            OR julianday('now') - julianday(ultimo.ultimo_pago) > 30
     """
     )
-    pagos_pendientes = cursor.fetchone()[0] or 0
+    pagos_pendientes = first_value(cursor.fetchone()) or 0
 
     # Obtener cuartos disponibles para el formulario
     cursor.execute(

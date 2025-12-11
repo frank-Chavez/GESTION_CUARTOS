@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, TextAreaField, IntegerField, DecimalField
 from wtforms.validators import DataRequired, NumberRange, Optional
-from database import conection
+from database import conection, first_value
 import sqlite3
 
 # Crear el Blueprint
@@ -50,16 +50,16 @@ def index():
 
     # Obtener estadísticas
     cursor.execute("SELECT COUNT(*) FROM cuartos")
-    total = cursor.fetchone()[0]
+    total = first_value(cursor.fetchone())
 
     cursor.execute("SELECT COUNT(*) FROM cuartos WHERE estado = 'disponible'")
-    disponibles = cursor.fetchone()[0]
+    disponibles = first_value(cursor.fetchone())
 
     cursor.execute("SELECT COUNT(*) FROM cuartos WHERE estado = 'ocupado'")
-    ocupados = cursor.fetchone()[0]
+    ocupados = first_value(cursor.fetchone())
 
     cursor.execute("SELECT COUNT(*) FROM cuartos WHERE estado = 'mantenimiento'")
-    mantenimiento = cursor.fetchone()[0]
+    mantenimiento = first_value(cursor.fetchone())
 
     cursor.close()
     conn.close()
@@ -150,7 +150,7 @@ def eliminar(id):
     try:
         # Verificar si hay inquilinos asociados
         cursor.execute("SELECT COUNT(*) FROM inquilinos WHERE id_cuarto = ?", (id,))
-        count = cursor.fetchone()[0]
+        count = first_value(cursor.fetchone())
 
         if count > 0:
             flash("No se puede eliminar el cuarto porque tiene inquilinos asociados", "error")
@@ -191,13 +191,13 @@ def obtener(id):
     if cuarto:
         return jsonify(
             {
-                "id": cuarto[0],
-                "numero": cuarto[1],
-                "piso": cuarto[2],
-                "precio": cuarto[3],
-                "descripcion": cuarto[4] or "",
-                "estado": cuarto[5],
-                "inquilino": cuarto[6] or None,
+                "id": cuarto.get('id'),
+                "numero": cuarto.get('numero'),
+                "piso": cuarto.get('piso'),
+                "precio": cuarto.get('precio'),
+                "descripcion": cuarto.get('descripcion') or "",
+                "estado": cuarto.get('estado'),
+                "inquilino": cuarto.get('inquilino') or None,
             }
         )
     return jsonify({"error": "Cuarto no encontrado"}), 404

@@ -79,7 +79,8 @@ def index():
     # Calcular estadísticas
     # Total cobrado (suma de todos los pagos)
     cursor.execute("SELECT COALESCE(SUM(monto), 0) FROM pagos")
-    total_cobrado = cursor.fetchone()[0]
+    from database import first_value
+    total_cobrado = first_value(cursor.fetchone())
 
     # Pendiente: suma de lo que falta pagar este mes por cada inquilino
     cursor.execute(
@@ -99,11 +100,13 @@ def index():
         )
         """
     )
-    pendiente = cursor.fetchone()[0]
+    from database import first_value
+    pendiente = first_value(cursor.fetchone())
 
     # Atrasado (pagos que fueron marcados como no puntuales)
     cursor.execute("SELECT COALESCE(SUM(monto), 0) FROM pagos WHERE puntual = 0")
-    atrasado = cursor.fetchone()[0]
+    from database import first_value
+    atrasado = first_value(cursor.fetchone())
 
     stats = {"total_cobrado": total_cobrado, "pendiente": pendiente, "atrasado": atrasado}
 
