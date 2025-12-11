@@ -393,16 +393,8 @@
                   <span class="switch-slider"></span>
                 </label>
               </div>
-              <div class="flex items-center justify-between py-5">
-                <div>
-                  <span class="font-semibold text-[18px]">Notificaciones Push</span><br />
-                  <span class="text-[15px] text-[#bfae9f]">Recibe notificaciones en tu dispositivo (push)</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button id="push-subscribe-btn" class="px-3 py-2 bg-green-600 text-white rounded">Activar Push</button>
-                  <button id="push-send-test-btn" class="px-3 py-2 bg-orange-600 text-white rounded">Enviar prueba</button>
-                </div>
-              </div>
+              
+              <!-- Notificaciones Push removed -->
             </div>
           </div>
         </div>
@@ -430,69 +422,7 @@
     }
   })();
 
-  // Push subscription helper
-  (function(){
-    const pushBtn = document.getElementById('push-subscribe-btn');
-    const pushTestBtn = document.getElementById('push-send-test-btn');
-    const csrfToken = '{{ csrf_token() }}';
-    const vapidPublicKey = '{{ vapid_public_key or "" }}';
-
-    function urlBase64ToUint8Array(base64String) {
-      const padding = '='.repeat((4 - base64String.length % 4) % 4);
-      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-      const rawData = window.atob(base64);
-      const outputArray = new Uint8Array(rawData.length);
-      for (let i = 0; i < rawData.length; ++i) {
-        outputArray[i] = rawData.charCodeAt(i);
-      }
-      return outputArray;
-    }
-
-    async function postJson(url, body){
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken
-        },
-        body: JSON.stringify(body || {})
-      });
-      return res;
-    }
-
-    if (pushBtn) {
-      pushBtn.addEventListener('click', async function(){
-        if (!('serviceWorker' in navigator)) return alert('Service Worker no soportado en este navegador');
-        if (!vapidPublicKey) return alert('Clave VAPID no configurada en el servidor');
-        try{
-          const reg = await navigator.serviceWorker.ready;
-          const sub = await reg.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
-          });
-          // enviar suscripción al servidor
-          const r = await postJson('{{ url_for("config.push_subscribe") }}', sub.toJSON());
-          if (!r.ok) {
-            const j = await r.json().catch(()=>({message:'Error'}));
-            alert('No se pudo guardar la suscripción: ' + (j.message || r.statusText));
-          } else {
-            alert('Suscripción guardada correctamente');
-          }
-        }catch(e){ console.error(e); alert('Error al suscribir: ' + e.message) }
-      });
-    }
-
-    if (pushTestBtn) {
-      pushTestBtn.addEventListener('click', async function(){
-        try{
-          const r = await postJson('{{ url_for("config.push_send_test") }}', {});
-          const j = await r.json().catch(()=>({}));
-          if (!r.ok) alert('Error al enviar prueba: ' + (j.message || r.statusText));
-          else alert('Notificación de prueba enviada (revisa tu dispositivo)');
-        }catch(e){ console.error(e); alert('Error al solicitar envío de prueba: ' + e.message) }
-      });
-    }
-  })();
+  // Push functionality removed
 
   // Toggle para notificaciones (persistir preferencias)
   (function(){
@@ -740,7 +670,11 @@
       const checked = shortcutSwitch.checked;
       shortcutSwitch.disabled = true;
       const isAndroid = /android/i.test(navigator.userAgent || '');
+      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent || '');
       const isInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true || !!window.isPWAInstalled;
+      // Detectar si estamos en el mismo equipo donde corre el servidor (entorno local)
+      const hostname = (window.location && window.location.hostname) || '';
+      const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
       try {
         if (checked) {
           // If running on Android (or if beforeinstallprompt is available), try to trigger PWA install
@@ -771,12 +705,36 @@
             }
           }
 
-          // Otherwise assume desktop: call backend to create .lnk
-          const r = await postJson('{{ url_for("config.crear_shortcut") }}', { url: window.location.origin, name: 'sistema cuartos' });
-          if (!r.ok) {
-            const txt = await r.json().catch(()=>({message:'Error'}));
-            alert('No se pudo crear el acceso directo: ' + (txt.message || r.statusText));
-            shortcutSwitch.checked = false;
+          // Desktop: prefer creating the .lnk on the user's Desktop only when
+          // the webapp is running locally (server and client same máquina).
+          // En entornos remotos no es posible crear archivos en el escritorio
+          // del cliente desde el servidor, así que descargamos un `.url`
+          // que el usuario pueda colocar en su Escritorio.
+          if (isLocalhost) {
+            const r = await postJson('{{ url_for("config.crear_shortcut") }}', { url: window.location.origin, name: 'sistema cuartos' });
+            if (!r.ok) {
+              const txt = await r.json().catch(()=>({message:'Error'}));
+              alert('No se pudo crear el acceso directo: ' + (txt.message || r.statusText));
+              shortcutSwitch.checked = false;
+            }
+          } else {
+            // Generar un archivo .url para descarga (Internet Shortcut de Windows)
+            try {
+              const name = 'sistema cuartos';
+              const content = `[InternetShortcut]\nURL=${window.location.origin}\nIconFile=${window.location.origin}/static/img/acceso_directo.ico\nIconIndex=0\n`;
+              const blob = new Blob([content], { type: 'application/internet-shortcut' });
+              const a = document.createElement('a');
+              a.href = URL.createObjectURL(blob);
+              a.download = name + '.url';
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              // keep the switch checked as user requested creation
+              shortcutSwitch.checked = true;
+            } catch (e) {
+              alert('No se pudo generar el acceso directo para descarga: ' + e.message);
+              shortcutSwitch.checked = false;
+            }
           }
         } else {
           // If it seems installed as PWA, instruct user how to remove it (cannot uninstall programmatically)
