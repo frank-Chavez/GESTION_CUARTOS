@@ -166,13 +166,29 @@ def loguin():
         user = cursor.fetchone()
         cursor.close()
         conn.close()
-        if user and check_password_hash(user['password'], password):
-            session["user_id"] = user['id']
-            # Mantener sesión eliminado: no persistimos entre cierres del navegador
-            session.permanent = False
-            return redirect(url_for("dashboard"))
-        else:
-            error = "Usuario o contraseña incorrectos"
+        if user:
+            # Support both dict rows (new row_factory) and sequence rows (old)
+            if isinstance(user, dict):
+                pw_hash = user.get('password')
+                uid = user.get('id')
+            else:
+                # tuple/sequence fallback
+                try:
+                    pw_hash = user[2]
+                except Exception:
+                    pw_hash = None
+                try:
+                    uid = user[0]
+                except Exception:
+                    uid = None
+
+            if pw_hash and check_password_hash(pw_hash, password):
+                session["user_id"] = uid
+                # Mantener sesión eliminado: no persistimos entre cierres del navegador
+                session.permanent = False
+                return redirect(url_for("dashboard"))
+            else:
+                error = "Usuario o contraseña incorrectos"
     else:
         # Si se envió el formulario pero no pasó validación, mostrar errores para depuración
         if request.method == 'POST':
