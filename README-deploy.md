@@ -30,6 +30,10 @@ gunicorn app:app -b 0.0.0.0:$PORT -w 2
 3. Añade variables de entorno en Settings → Variables:
  - `SECRET_KEY`: una cadena secreta larga (ej: `change-me` → cámbiala por seguridad).
  - `DATABASE_URL`: ruta donde se guardará el archivo SQLite en el disco persistente. Por defecto esta app usa `/data/database.db`.
+
+Nota sobre inicialización de la base de datos
+
+ - Al iniciarse, la aplicación intentará inicializar el esquema si la base de datos está vacía usando `script.sql` incluido en el repo. Si no existe un usuario, se creará un usuario administrador por defecto `usuario: admin`, `contraseña: admin` para facilitar el primer acceso — cambia la contraseña al iniciar sesión.
  - `FLASK_DEBUG`: `0` en producción.
 
 Volumen persistente (importante para SQLite)

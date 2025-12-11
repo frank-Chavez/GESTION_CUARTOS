@@ -31,6 +31,47 @@ app.register_blueprint(config_bp)
 app.register_blueprint(cuartos_bp)
 
 
+def ensure_db_initialized():
+    """If the database has no tables, initialize it using `script.sql`.
+
+    This helps first-time deployments on hosting platforms (Railway) where
+    the SQLite file may be empty. It will create the schema from
+    `script.sql`. If no `script.sql` is present, this is a no-op.
+    """
+    try:
+        conn = conection()
+        cur = conn.cursor()
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='usuarios';")
+        row = cur.fetchone()
+        if row is None:
+            # no usuarios table -> assume fresh DB
+            sql_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'script.sql')
+            if os.path.exists(sql_path):
+                with open(sql_path, 'r', encoding='utf-8') as f:
+                    sql = f.read()
+                cur.executescript(sql)
+                conn.commit()
+                # Create a default admin user to allow initial login. Password: 'admin'
+                try:
+                    pw = generate_password_hash('admin')
+                    cur.execute("INSERT INTO usuarios (nombre, usuario, password, rol, fecha_creacion) VALUES (?, ?, ?, 'admin', ?)",
+                                ('Administrador', 'admin', pw, datetime.utcnow().isoformat()))
+                    conn.commit()
+                    print('DB inicializada y usuario admin creado (usuario: admin, contraseña: admin)')
+                except Exception:
+                    # ignore user creation errors but keep DB created
+                    pass
+        cur.close()
+        conn.close()
+    except Exception as e:
+        # Do not crash the app if DB initialization fails; log instead.
+        print('Advertencia: no se pudo inicializar la base de datos automáticamente:', e)
+
+
+# Intentamos inicializar la base de datos en arranque (útil en despliegues)
+ensure_db_initialized()
+
+
 class InquilinoForm(FlaskForm):
     nombre = StringField(validators=[DataRequired()])
     apellido = StringField(validators=[DataRequired()])

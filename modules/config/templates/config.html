@@ -25,19 +25,25 @@
           class="w-full"
         >
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-          <div class="w-full bg-dark-card rounded-xl shadow-lg p-6 text-white">
+          <div class="w-full bg-white dark:bg-dark-card rounded-xl shadow-lg p-6 text-gray-900 dark:text-white">
             <style>
-              /* Estilos para inputs del perfil - look según mock */
+              /* Estilos para inputs del perfil - adaptables a light/dark */
               .profile-input {
                 transition: border-color 0.18s ease, box-shadow 0.18s ease,
                   transform 0.12s ease;
                 border-radius: 0.625rem;
                 padding: 0.75rem 1rem;
                 background: inherit;
+                border: 1px solid rgba(0, 0, 0, 0.06);
+                box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.02);
+                color: #111827; /* gray-900 */
+                font-size: 0.95rem;
+              }
+              /* Dark variant */
+              .dark .profile-input {
                 border: 1px solid rgba(255, 255, 255, 0.06);
                 box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
-                color: #fff;
-                font-size: 0.95rem;
+                color: #ffffff;
               }
               .profile-input:focus {
                 outline: none;
@@ -47,12 +53,14 @@
                 transform: translateY(-0.5px);
               }
               .profile-input::placeholder {
-                color: #bfae9f;
+                color: #6b7280; /* gray-500 */
                 opacity: 0.9;
               }
+              .dark .profile-input::placeholder { color: #bfae9f; }
               .profile-input:hover {
-                border-color: rgba(255, 255, 255, 0.12);
+                border-color: rgba(0, 0, 0, 0.12);
               }
+              .dark .profile-input:hover { border-color: rgba(255,255,255,0.12); }
             </style>
 
             <div class="flex items-center mb-4">
@@ -87,7 +95,7 @@
                   name="usuario"
                   type="text"
                   value="{{ usuario[1] }}"
-                  class="profile-input w-full bg-dark-card border border-gray-700 rounded px-3 py-2 h-12 text-white"
+                  class="profile-input w-full bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700 rounded px-3 py-2 h-12 text-gray-900 dark:text-white"
                 />
               </div>
               <div>
@@ -96,7 +104,7 @@
                   type="text"
                   value="{{ usuario[2] if usuario else '' }}"
                   disabled
-                  class="profile-input w-full bg-dark-card border border-gray-700 rounded px-3 py-2 h-12 text-white cursor-not-allowed"
+                  class="profile-input w-full bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700 rounded px-3 py-2 h-12 text-gray-900 dark:text-white cursor-not-allowed"
                 />
                 <input
                   type="hidden"
@@ -127,7 +135,7 @@
           class="w-full"
         >
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-          <div class="bg-dark-card rounded-2xl shadow-lg p-6 text-white">
+          <div class="bg-white dark:bg-dark-card rounded-2xl shadow-lg p-6 text-gray-900 dark:text-white">
             <style>
               /* Checklist styles for security requirements */
               #security-checklist { pointer-events: none; }
@@ -206,7 +214,7 @@
                     autocomplete="new-password"
                     placeholder="********"
                     maxlength="64"
-                    class="profile-input w-full bg-dark-card border border-gray-700 rounded px-4 pr-10 h-12 text-white"
+                    class="profile-input w-full bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700 rounded px-4 pr-10 h-12 text-gray-900 dark:text-white"
                     />
                   <button type="button" id="toggle-new" class="pw-toggle-btn absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#bfae9f]" aria-label="Mostrar contraseña">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true">
@@ -228,7 +236,7 @@
                     autocomplete="new-password"
                     placeholder="********"
                     maxlength="64"
-                    class="profile-input w-full bg-dark-card border border-gray-700 rounded px-4 pr-10 h-12 text-white"
+                    class="profile-input w-full bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700 rounded px-4 pr-10 h-12 text-gray-900 dark:text-white"
                     />
                   <button type="button" id="toggle-confirm" class="pw-toggle-btn absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#bfae9f]" aria-label="Mostrar contraseña de confirmación">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true">
@@ -285,7 +293,7 @@
       <!-- Notificaciones (abajo, ancho completo) -->
       <div class="w-full lg:col-span-2">
         <div class="w-full">
-          <div class="bg-[#231a15] rounded-2xl shadow-lg p-8 text-white h-full">
+          <div class="bg-white dark:bg-dark-card rounded-2xl shadow-lg p-8 text-gray-900 dark:text-white h-full">
             <style>
               /* Toggle personalizado para parecerse al diseño */
               .switch {
@@ -302,9 +310,9 @@
                 display: inline-block;
                 width: 46px;
                 height: 26px;
-                background: #2b231f;
+                background: #e6e6e6; /* light default */
                 border-radius: 9999px;
-                border: 2px solid #3a2c22;
+                border: 2px solid #d1d5db; /* gray-300 */
                 position: relative;
                 transition: background-color 0.18s ease, border-color 0.18s ease;
               }
@@ -318,9 +326,15 @@
                 height: 18px;
                 background: #fff;
                 border-radius: 9999px;
-                box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.25) inset;
+                box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.06) inset;
                 transition: transform 0.18s ease, box-shadow 0.18s ease;
               }
+              /* Dark mode overrides */
+              .dark .switch-slider {
+                background: #2b231f;
+                border: 2px solid #3a2c22;
+              }
+              .dark .switch-slider::before { box-shadow: 0 0 0 4px rgba(0,0,0,0.25) inset; }
               .switch input:checked + .switch-slider {
                 background: #ef893f;
                 border-color: #ef893f;
