@@ -128,6 +128,16 @@ def loguin():
             return redirect(url_for("dashboard"))
         else:
             error = "Usuario o contraseña incorrectos"
+    else:
+        # Si se envió el formulario pero no pasó validación, mostrar errores para depuración
+        if request.method == 'POST':
+            errs = []
+            try:
+                for f, e in form.errors.items():
+                    errs.append(f + ': ' + '; '.join(e))
+            except Exception:
+                errs.append('error desconocido en validación')
+            error = 'Error en formulario: ' + (', '.join(errs) if errs else 'validación fallida')
     return render_template("loguin.html", form=form, error=error)
 
 
