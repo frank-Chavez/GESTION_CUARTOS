@@ -222,7 +222,7 @@ def dashboard():
     # Ganancias por mes
     cursor.execute(
         """
-        SELECT strftime('%Y-%m', fecha), SUM(monto)
+        SELECT strftime('%Y-%m', fecha) AS mes, SUM(monto) AS total
         FROM pagos
         GROUP BY strftime('%Y-%m', fecha)
     """
@@ -326,9 +326,9 @@ ORDER BY i.nombre
     cursor.close()
     conn.close()
 
-    # Datos para el gráfico
-    meses = [row[0] for row in data]
-    ganancias = [row[1] for row in data]
+    # Datos para el gráfico (usar claves porque row_factory devuelve dicts)
+    meses = [row.get('mes') or list(row.values())[0] for row in data]
+    ganancias = [row.get('total') or list(row.values())[1] for row in data]
 
     return render_template(
         "dashboard.html",
