@@ -4,7 +4,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, DecimalField, BooleanField, DateField
 from wtforms.validators import DataRequired, NumberRange, Regexp
 from database import conection
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -19,6 +19,8 @@ from modules.cuartos.app import cuartos_bp
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "change-me")
 app.config["DEBUG"] = os.getenv("FLASK_DEBUG") == "1"
+# Persistir la sesión entre cierres del navegador (por defecto 30 días)
+app.permanent_session_lifetime = timedelta(days=int(os.getenv("PERMANENT_DAYS", "30")))
 
 # Inicializar CSRFProtect
 csrf = CSRFProtect(app)
@@ -45,19 +47,21 @@ def ensure_db_initialized():
         row = cur.fetchone()
         if row is None:
             # no usuarios table -> assume fresh DB
-            sql_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'script.sql')
+            sql_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "script.sql")
             if os.path.exists(sql_path):
-                with open(sql_path, 'r', encoding='utf-8') as f:
+                with open(sql_path, "r", encoding="utf-8") as f:
                     sql = f.read()
                 cur.executescript(sql)
                 conn.commit()
                 # Create a default admin user to allow initial login. Password: 'admin'
                 try:
-                    pw = generate_password_hash('admin')
-                    cur.execute("INSERT INTO usuarios (nombre, usuario, password, rol, fecha_creacion) VALUES (?, ?, ?, 'admin', ?)",
-                                ('Administrador', 'admin', pw, datetime.utcnow().isoformat()))
+                    pw = generate_password_hash("admin")
+                    cur.execute(
+                        "INSERT INTO usuarios (nombre, usuario, password, rol, fecha_creacion) VALUES (?, ?, ?, 'admin', ?)",
+                        ("Administrador", "admin", pw, datetime.utcnow().isoformat()),
+                    )
                     conn.commit()
-                    print('DB inicializada y usuario admin creado (usuario: admin, contraseña: admin)')
+                    print("DB inicializada y usuario admin creado (usuario: admin, contraseña: admin)")
                 except Exception:
                     # ignore user creation errors but keep DB created
                     pass
@@ -65,7 +69,7 @@ def ensure_db_initialized():
         conn.close()
     except Exception as e:
         # Do not crash the app if DB initialization fails; log instead.
-        print('Advertencia: no se pudo inicializar la base de datos automáticamente:', e)
+        print("Advertencia: no se pudo inicializar la base de datos automáticamente:", e)
 
 
 # Intentamos inicializar la base de datos en arranque (útil en despliegues)
@@ -105,6 +109,8 @@ def loguin():
         conn.close()
         if user and check_password_hash(user[2], password):
             session["user_id"] = user[0]
+            # Marcar la sesión como permanente para que persista al cerrar el navegador
+            session.permanent = True
             return redirect(url_for("dashboard"))
         else:
             error = "Usuario o contraseña incorrectos"
@@ -113,9 +119,41 @@ def loguin():
 
 @app.route("/logout", methods=["POST"])
 def logout():
-    session.pop("user_id", None)
-    flash("Sesión cerrada", "success")
-    return redirect(url_for("loguin"))
+    # Require confirmation password before logging out
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("loguin"))
+
+    confirm_password = request.form.get('confirm_password')
+    if not confirm_password:
+        flash("Debes confirmar tu contraseña para cerrar sesión", "warning")
+        return redirect(url_for("dashboard"))
+
+    try:
+        conn = conection()
+        cur = conn.cursor()
+        cur.execute("SELECT password FROM usuarios WHERE id = ?", (user_id,))
+        row = cur.fetchone()
+        cur.close()
+        conn.close()
+    except Exception:
+        flash("Error al verificar la contraseña", "error")
+        return redirect(url_for("dashboard"))
+
+    if not row:
+        # user not found: just clear session
+        session.pop("user_id", None)
+        flash("Sesión cerrada", "success")
+        return redirect(url_for("loguin"))
+
+    stored_hash = row[0]
+    if check_password_hash(stored_hash, confirm_password):
+        session.pop("user_id", None)
+        flash("Sesión cerrada", "success")
+        return redirect(url_for("loguin"))
+    else:
+        flash("Contraseña incorrecta. No se cerró la sesión.", "error")
+        return redirect(url_for("dashboard"))
 
 
 @app.route("/dashboard")
