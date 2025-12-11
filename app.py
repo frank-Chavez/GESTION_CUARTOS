@@ -118,8 +118,11 @@ def loguin():
                 if hasattr(form, 'remember'):
                     remember = bool(form.remember.data)
                 else:
+                    # HTML checkbox sends 'on' when checked; treat any present value as True
                     remember = bool(request.form.get('remember'))
                 session.permanent = bool(remember)
+                # DEBUG: flash temporary info to verify checkbox binding
+                flash(f"DEBUG: remember={remember}", "info")
             except Exception:
                 session.permanent = False
             return redirect(url_for("dashboard"))
