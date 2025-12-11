@@ -3,3 +3,5 @@ Flask-WTF
 WTForms
 gunicorn
 Werkzeug
+pywebpush
+cryptography
