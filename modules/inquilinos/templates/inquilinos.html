@@ -1,5 +1,6 @@
-{% extends "base.html" %} {% block title %}Inquilinos - Sistema{% endblock %} {%
-block content %}
+{% extends "base.html" %}
+{% block title %}Inquilinos - Sistema{% endblock %}
+{% block content %}
 <div
   class="flex p-4 sm:px-8 w-full justify-between items-center flex-wrap gap-4"
 >
@@ -32,7 +33,7 @@ block content %}
 </div>
 <div class="p-4 sm:px-8">
   <div
-    class="bg-white dark:bg-dark-card rounded-lg shadow-sm dark:shadow-dark-border/20 p-4 sm:p-6 transition-colors flex flex-col gap-1"
+              {% elif inquilino['estado_pago'] == 'Atrasado' %}
   >
     <div class="flex items-center relative w-full">
       <img
@@ -108,51 +109,51 @@ block content %}
           {% for inquilino in inquilinos %}
           <tr
             class="inquilino-row border-b border-gray-200 dark:border-dark-border/30 hover:bg-gray-50 dark:hover:bg-[#2f2722] transition-colors"
-            data-estado="{{ inquilino[8] or '' }}"
-            data-nombre="{{ inquilino[1] or '' }} {{ inquilino[2] or '' }}"
-            data-cuarto="{{ inquilino[5] or '' }}"
-            data-telefono="{{ inquilino[4] or '' }}"
+            data-estado="{{ inquilino['estado_pago'] or '' }}"
+            data-nombre="{{ inquilino['nombre'] or '' }} {{ inquilino['apellido'] or '' }}"
+            data-cuarto="{{ inquilino['cuarto'] or '' }}"
+            data-telefono="{{ inquilino['telefono'] or '' }}"
           >
             <td class="py-4 px-4">
               <p class="font-medium text-gray-900 dark:text-white">
-                {{ inquilino[1] }} {{ inquilino[2] }}
+                {{ inquilino['nombre'] }} {{ inquilino['apellido'] }}
               </p>
             </td>
             <td class="py-4 px-4">
-              <span class="text-[#ef893f] font-medium">{{ inquilino[5] }}</span>
+              <span class="text-[#ef893f] font-medium">{{ inquilino['cuarto'] }}</span>
             </td>
             <td class="py-4 px-4">
               <div class="flex flex-col">
                 <span class="text-gray-900 dark:text-white"
-                  >{{ inquilino[4] }}</span
+                  >{{ inquilino['telefono'] }}</span
                 >
                 <span class="text-sm text-gray-500 dark:text-gray-400"
-                  >DNI: {{ inquilino[3] }}</span
+                  >DNI: {{ inquilino['dni'] }}</span
                 >
               </div>
             </td>
             <td class="py-4 px-4">
               <span class="text-gray-600 dark:text-gray-300"
-                >{{ inquilino[7] if inquilino[7] else 'N/A' }}</span
+                >{{ inquilino['fecha_ingreso'] if inquilino['fecha_ingreso'] else 'N/A' }}</span
               >
             </td>
             <td class="py-4 px-4">
               <span class="text-gray-900 dark:text-white font-medium"
-                >S/{{ "%.2f"|format(inquilino[6]) }}</span
+                >S/{{ "%.2f"|format(inquilino['monto_mensual']) }}</span
               >
             </td>
             <td class="py-4 px-4">
-              {% if inquilino[8] == 'Pagado' %}
+              {% if inquilino['estado_pago'] == 'Pagado' %}
               <span
                 class="px-3 py-1 bg-green-500 text-white rounded-full text-sm font-medium"
                 >Pagado</span
               >
-              {% elif inquilino[8] == 'Pendiente' %}
+              {% elif inquilino['estado_pago'] == 'Pendiente' %}
               <span
                 class="px-3 py-1 bg-[#ef893f] text-white rounded-full text-sm font-medium"
                 >Pendiente</span
               >
-              {% elif inquilino[8] == 'Atrasado' %}
+              {% elif inquilino['estado_pago'] == 'Atrasado' %}
               <span
                 class="px-3 py-1 bg-red-500 text-white rounded-full text-sm font-medium"
                 >Atrasado</span
@@ -164,15 +165,15 @@ block content %}
                 <button
                   class="view-btn text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
                   title="Ver detalles"
-                  data-id="{{ inquilino[0] }}"
-                  data-nombre="{{ inquilino[1] }}"
-                  data-apellido="{{ inquilino[2] }}"
-                  data-dni="{{ inquilino[3] }}"
-                  data-telefono="{{ inquilino[4] }}"
-                  data-cuarto="{{ inquilino[5] }}"
-                  data-renta="{{ inquilino[6] }}"
-                  data-fecha="{{ inquilino[7] }}"
-                  data-estado="{{ inquilino[8] }}"
+                  data-id="{{ inquilino['id'] }}"
+                  data-nombre="{{ inquilino['nombre'] }}"
+                  data-apellido="{{ inquilino['apellido'] }}"
+                  data-dni="{{ inquilino['dni'] }}"
+                  data-telefono="{{ inquilino['telefono'] }}"
+                  data-cuarto="{{ inquilino['cuarto'] }}"
+                  data-renta="{{ inquilino['monto_mensual'] }}"
+                  data-fecha="{{ inquilino['fecha_ingreso'] }}"
+                  data-estado="{{ inquilino['estado_pago'] }}"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -198,13 +199,13 @@ block content %}
                 <button
                   class="edit-btn text-gray-400 hover:text-blue-500 transition-colors"
                   title="Editar"
-                  data-id="{{ inquilino[0] }}"
-                  data-nombre="{{ inquilino[1] }}"
-                  data-apellido="{{ inquilino[2] }}"
-                  data-dni="{{ inquilino[3] }}"
-                  data-telefono="{{ inquilino[4] }}"
-                  data-cuarto="{{ inquilino[5] }}"
-                  data-renta="{{ inquilino[6] }}"
+                  data-id="{{ inquilino['id'] }}"
+                  data-nombre="{{ inquilino['nombre'] }}"
+                  data-apellido="{{ inquilino['apellido'] }}"
+                  data-dni="{{ inquilino['dni'] }}"
+                  data-telefono="{{ inquilino['telefono'] }}"
+                  data-cuarto="{{ inquilino['cuarto'] }}"
+                  data-renta="{{ inquilino['monto_mensual'] }}"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -225,9 +226,9 @@ block content %}
                   type="button"
                   class="delete-btn text-gray-400 hover:text-red-500 transition-colors"
                   title="Eliminar"
-                  data-id="{{ inquilino[0] }}"
-                  data-nombre="{{ inquilino[1] }} {{ inquilino[2] }}"
-                  data-cuarto="{{ inquilino[5] }}"
+                  data-id="{{ inquilino['id'] }}"
+                  data-nombre="{{ inquilino['nombre'] }} {{ inquilino['apellido'] }}"
+                  data-cuarto="{{ inquilino['cuarto'] }}"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -282,33 +283,33 @@ block content %}
       {% for inquilino in inquilinos %}
       <div
         class="inquilino-card bg-gray-50 dark:bg-[#2a201b] rounded-xl p-4 border border-gray-200 dark:border-dark-border/30"
-        data-estado="{{ inquilino[8] or '' }}"
-        data-nombre="{{ inquilino[1] or '' }} {{ inquilino[2] or '' }}"
-        data-cuarto="{{ inquilino[5] or '' }}"
-        data-telefono="{{ inquilino[4] or '' }}"
+        data-estado="{{ inquilino['estado_pago'] or '' }}"
+        data-nombre="{{ inquilino['nombre'] or '' }} {{ inquilino['apellido'] or '' }}"
+        data-cuarto="{{ inquilino['cuarto'] or '' }}"
+        data-telefono="{{ inquilino['telefono'] or '' }}"
       >
         <!-- Header de la tarjeta -->
         <div class="flex justify-between items-start mb-3">
           <div class="flex-1">
             <h3 class="font-semibold text-gray-900 dark:text-white text-base">
-              {{ inquilino[1] }} {{ inquilino[2] }}
+              {{ inquilino['nombre'] }} {{ inquilino['apellido'] }}
             </h3>
             <p class="text-[#ef893f] font-medium text-sm mt-0.5">
-              {{ inquilino[5] }}
+              {{ inquilino['cuarto'] }}
             </p>
           </div>
           <div>
-            {% if inquilino[8] == 'Pagado' %}
+            {% if inquilino['estado_pago'] == 'Pagado' %}
             <span
               class="px-2.5 py-1 bg-green-500 text-white rounded-full text-xs font-medium"
               >Pagado</span
             >
-            {% elif inquilino[8] == 'Pendiente' %}
+            {% elif inquilino['estado_pago'] == 'Pendiente' %}
             <span
               class="px-2.5 py-1 bg-[#ef893f] text-white rounded-full text-xs font-medium"
               >Pendiente</span
             >
-            {% elif inquilino[8] == 'Atrasado' %}
+            {% elif inquilino['estado_pago'] == 'Atrasado' %}
             <span
               class="px-2.5 py-1 bg-red-500 text-white rounded-full text-xs font-medium"
               >Atrasado</span
@@ -321,23 +322,23 @@ block content %}
         <div class="grid grid-cols-2 gap-3 text-sm mb-3">
           <div>
             <p class="text-gray-500 dark:text-gray-400 text-xs">Contacto</p>
-            <p class="text-gray-900 dark:text-white">{{ inquilino[4] }}</p>
+            <p class="text-gray-900 dark:text-white">{{ inquilino['telefono'] }}</p>
             <p class="text-gray-500 dark:text-gray-400 text-xs truncate">
-              DNI: {{ inquilino[3] }}
+              DNI: {{ inquilino['dni'] }}
             </p>
           </div>
           <div>
             <p class="text-gray-500 dark:text-gray-400 text-xs">
               Renta mensual
             </p>
-            <p class="text-gray-900 dark:text-white font-semibold">
-              S/{{ "%.2f"|format(inquilino[6]) }}
+              <p class="text-gray-900 dark:text-white font-semibold">
+              S/{{ "%.2f"|format(inquilino['monto_mensual']) }}
             </p>
           </div>
           <div>
             <p class="text-gray-500 dark:text-gray-400 text-xs">Fecha inicio</p>
-            <p class="text-gray-600 dark:text-gray-300">
-              {{ inquilino[7] if inquilino[7] else 'N/A' }}
+              <p class="text-gray-600 dark:text-gray-300">
+              {{ inquilino['fecha_ingreso'] if inquilino['fecha_ingreso'] else 'N/A' }}
             </p>
           </div>
         </div>
@@ -349,15 +350,15 @@ block content %}
           <button
             class="view-btn p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-[#3a302a] rounded-lg transition-colors"
             title="Ver detalles"
-            data-id="{{ inquilino[0] }}"
-            data-nombre="{{ inquilino[1] }}"
-            data-apellido="{{ inquilino[2] }}"
-            data-dni="{{ inquilino[3] }}"
-            data-telefono="{{ inquilino[4] }}"
-            data-cuarto="{{ inquilino[5] }}"
-            data-renta="{{ inquilino[6] }}"
-            data-fecha="{{ inquilino[7] }}"
-            data-estado="{{ inquilino[8] }}"
+            data-id="{{ inquilino['id'] }}"
+            data-nombre="{{ inquilino['nombre'] }}"
+            data-apellido="{{ inquilino['apellido'] }}"
+            data-dni="{{ inquilino['dni'] }}"
+            data-telefono="{{ inquilino['telefono'] }}"
+            data-cuarto="{{ inquilino['cuarto'] }}"
+            data-renta="{{ inquilino['monto_mensual'] }}"
+            data-fecha="{{ inquilino['fecha_ingreso'] }}"
+            data-estado="{{ inquilino['estado_pago'] }}"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -383,13 +384,13 @@ block content %}
           <button
             class="edit-btn p-2 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
             title="Editar"
-            data-id="{{ inquilino[0] }}"
-            data-nombre="{{ inquilino[1] }}"
-            data-apellido="{{ inquilino[2] }}"
-            data-dni="{{ inquilino[3] }}"
-            data-telefono="{{ inquilino[4] }}"
-            data-cuarto="{{ inquilino[5] }}"
-            data-renta="{{ inquilino[6] }}"
+            data-id="{{ inquilino['id'] }}"
+            data-nombre="{{ inquilino['nombre'] }}"
+            data-apellido="{{ inquilino['apellido'] }}"
+            data-dni="{{ inquilino['dni'] }}"
+            data-telefono="{{ inquilino['telefono'] }}"
+            data-cuarto="{{ inquilino['cuarto'] }}"
+            data-renta="{{ inquilino['monto_mensual'] }}"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -410,9 +411,9 @@ block content %}
             type="button"
             class="delete-btn p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
             title="Eliminar"
-            data-id="{{ inquilino[0] }}"
-            data-nombre="{{ inquilino[1] }} {{ inquilino[2] }}"
-            data-cuarto="{{ inquilino[5] }}"
+            data-id="{{ inquilino['id'] }}"
+            data-nombre="{{ inquilino['nombre'] }} {{ inquilino['apellido'] }}"
+            data-cuarto="{{ inquilino['cuarto'] }}"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
