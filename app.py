@@ -108,6 +108,18 @@ def ensure_schema_migrations():
                 cur.execute("ALTER TABLE cuartos ADD COLUMN precio REAL DEFAULT 0.0")
             except Exception:
                 pass
+        # Check pagos table for new columns required by code
+        try:
+            cur.execute("PRAGMA table_info('pagos')")
+            pagos_cols = [r[1] for r in cur.fetchall()]
+            if 'metodo_pago' not in pagos_cols:
+                try:
+                    cur.execute("ALTER TABLE pagos ADD COLUMN metodo_pago TEXT DEFAULT 'efectivo'")
+                except Exception:
+                    pass
+        except Exception:
+            # ignore if pagos table doesn't exist yet
+            pass
         conn.commit()
         cur.close()
         conn.close()

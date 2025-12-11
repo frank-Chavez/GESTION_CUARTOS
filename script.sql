@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS pagos (
     id_inquilino INTEGER NOT NULL,
     fecha TEXT NOT NULL,
     monto REAL NOT NULL,
+    metodo_pago TEXT DEFAULT 'efectivo',
     observacion TEXT,
     puntual BOOLEAN NOT NULL,
     FOREIGN KEY (id_inquilino) REFERENCES inquilinos(id)
