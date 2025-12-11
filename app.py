@@ -31,30 +31,6 @@ app.register_blueprint(config_bp)
 app.register_blueprint(cuartos_bp)
 
 
-# Context processor: inyecta la preferencia `dark_mode` (por usuario) en todas las plantillas
-@app.context_processor
-def inject_user_theme():
-    from flask import session
-    dark_mode = None
-    try:
-        user_id = session.get('user_id')
-        if user_id:
-            with conection() as conn:
-                cur = conn.cursor()
-                cur.execute(
-                    "CREATE TABLE IF NOT EXISTS settings (user_id INTEGER, key TEXT, value TEXT, PRIMARY KEY(user_id, key))"
-                )
-                cur.execute("SELECT value FROM settings WHERE user_id = ? AND key = ?", (user_id, 'dark_mode'))
-                r = cur.fetchone()
-                if r:
-                    val = r[0]
-                    if val in ('dark', 'light'):
-                        dark_mode = val
-    except Exception:
-        dark_mode = None
-    return {'dark_mode': dark_mode}
-
-
 class InquilinoForm(FlaskForm):
     nombre = StringField(validators=[DataRequired()])
     apellido = StringField(validators=[DataRequired()])
