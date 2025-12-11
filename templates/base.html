@@ -15,6 +15,18 @@
     />
 
     <!-- Script de modo oscuro (cargar antes para evitar flash) -->
+    <!-- Sincronizar preferencia del servidor (dark_mode) con localStorage para aplicar tema en todas las páginas -->
+    <script>
+      (function(){
+        try {
+          var serverTheme = "{{ dark_mode or '' }}";
+          if (serverTheme === 'dark' || serverTheme === 'light') {
+            try { localStorage.setItem('theme', serverTheme); } catch (e) {}
+            try { localStorage.setItem('theme_locked', '1'); } catch (e) {}
+          }
+        } catch (e) {}
+      })();
+    </script>
     <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
 
     <style>
@@ -523,48 +535,5 @@
     <script src="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js"></script>
     {% block scripts %}{% endblock %}
   </body>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('{{ url_for("static", filename="sw.js") }}')
-          .then(function(reg) { console.log('Service worker registrado.', reg); })
-          .catch(function(err) { console.warn('Service worker fallo:', err); });
-      });
-    }
-  </script>
-  <script>
-    // Exponer el evento `beforeinstallprompt` y un helper `triggerPWAInstall`.
-    // El botón de instalación se gestiona desde la página de Configuración, así
-    // que aquí sólo mantenemos el listener y el helper para que `config.html`
-    // pueda invocarlo.
-    (function(){
-      window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        // Guardar el evento para que otros scripts lo puedan usar
-        window.deferredPWAInstall = e;
-      });
-
-      window.addEventListener('load', function(){
-        // detectar si la app ya está instalada / en modo standalone
-        function updateInstalledState(){
-          const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-          window.isPWAInstalled = !!isStandalone;
-        }
-        updateInstalledState();
-
-        // Helper para que otros scripts (ej. config) puedan lanzar el prompt si está disponible
-        window.triggerPWAInstall = async function(){
-          if (window.deferredPWAInstall) {
-            try {
-              window.deferredPWAInstall.prompt();
-              const choice = await window.deferredPWAInstall.userChoice;
-              window.deferredPWAInstall = null;
-              return choice;
-            } catch (e) { console.warn('Error triggerPWAInstall', e); return null; }
-          }
-          return null;
-        };
-      });
-    })();
-  </script>
+  <!-- Service worker and PWA helpers removed -->
 </html>
