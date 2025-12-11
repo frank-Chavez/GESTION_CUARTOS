@@ -205,7 +205,14 @@ def dashboard():
     cursor.execute(
         """
 SELECT 
+    i.id,
     i.nombre,
+    i.apellido,
+    i.dni,
+    i.telefono,
+    i.fecha_ingreso,
+    i.monto_mensual,
+    i.dia_pago,
     c.numero AS cuarto,
     CASE
         WHEN pagos_mes.total IS NULL OR pagos_mes.total = 0 THEN 
@@ -234,6 +241,8 @@ ORDER BY i.nombre
         """
     )
     inquilinos = cursor.fetchall()
+    # Convertir sqlite3.Row a dict para evitar errores de atributo en las plantillas
+    inquilinos = [dict(r) for r in inquilinos]
 
     # Estadísticas para las tarjetas del dashboard
 
@@ -284,6 +293,7 @@ ORDER BY i.nombre
         """
     )
     cuartos_disponibles = cursor.fetchall()
+    cuartos_disponibles = [dict(r) for r in cuartos_disponibles]
 
     cursor.close()
     conn.close()
