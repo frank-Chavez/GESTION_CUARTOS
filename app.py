@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, make_response
 from flask_wtf import CSRFProtect
 from flask_wtf import FlaskForm
 from wtforms import StringField, DecimalField, BooleanField, DateField
@@ -122,16 +122,26 @@ def loguin():
             # (checkbox 'remember' en el formulario)
             try:
                 remember = False
-                # preferir el campo del WTForm cuando se usa, fallback a request.form
                 if hasattr(form, 'remember'):
                     remember = bool(form.remember.data)
                 else:
-                    # HTML checkbox sends 'on' when checked; treat any present value as True
                     remember = bool(request.form.get('remember'))
                 session.permanent = bool(remember)
             except Exception:
                 session.permanent = False
-            return redirect(url_for("dashboard"))
+
+            # Prepare response so we can set an auxiliary persistent cookie
+            resp = make_response(redirect(url_for("dashboard")))
+            try:
+                if session.permanent:
+                    max_age = int(app.permanent_session_lifetime.total_seconds())
+                    resp.set_cookie('remembered', '1', max_age=max_age, httponly=False, samesite=app.config.get('SESSION_COOKIE_SAMESITE','Lax'))
+                else:
+                    # delete cookie if exists
+                    resp.set_cookie('remembered', '', expires=0)
+            except Exception:
+                pass
+            return resp
         else:
             error = "Usuario o contraseña incorrectos"
     return render_template("loguin.html", form=form, error=error)
