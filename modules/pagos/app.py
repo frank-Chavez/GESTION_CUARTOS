@@ -79,8 +79,7 @@ def index():
     # Calcular estadísticas
     # Total cobrado (suma de todos los pagos)
     cursor.execute("SELECT COALESCE(SUM(monto), 0) FROM pagos")
-    from database import first_value
-    total_cobrado = first_value(cursor.fetchone())
+    total_cobrado = cursor.fetchone()[0]
 
     # Pendiente: suma de lo que falta pagar este mes por cada inquilino
     cursor.execute(
@@ -100,13 +99,11 @@ def index():
         )
         """
     )
-    from database import first_value
-    pendiente = first_value(cursor.fetchone())
+    pendiente = cursor.fetchone()[0]
 
     # Atrasado (pagos que fueron marcados como no puntuales)
     cursor.execute("SELECT COALESCE(SUM(monto), 0) FROM pagos WHERE puntual = 0")
-    from database import first_value
-    atrasado = first_value(cursor.fetchone())
+    atrasado = cursor.fetchone()[0]
 
     stats = {"total_cobrado": total_cobrado, "pendiente": pendiente, "atrasado": atrasado}
 
@@ -114,14 +111,7 @@ def index():
     conn.close()
 
     form = PagoForm()
-    # `inquilinos` rows are dicts (from database.row_factory), use keys
-    form.id_inquilino.choices = [
-        (
-            i['id'],
-            i.get('nombre_completo') or ((i.get('nombre') or '') + ' ' + (i.get('apellido') or '')).strip(),
-        )
-        for i in inquilinos
-    ]
+    form.id_inquilino.choices = [(i[0], i[1]) for i in inquilinos]
 
     return render_template("pagos.html", pagos=pagos, form=form, inquilinos=inquilinos, stats=stats)
 
@@ -137,9 +127,7 @@ def agregar():
     inquilinos = cursor.fetchall()
 
     form = PagoForm()
-    form.id_inquilino.choices = [
-        (i['id'], ((i.get('nombre') or '') + ' ' + (i.get('apellido') or '')).strip()) for i in inquilinos
-    ]
+    form.id_inquilino.choices = [(i[0], i[1]) for i in inquilinos]
 
     if not form.validate_on_submit():
         first_error = next(iter(form.errors.values()), ["Datos inválidos"])[0]
@@ -156,7 +144,7 @@ def agregar():
     # Determinar si el pago es puntual
     cursor.execute("SELECT dia_pago FROM inquilinos WHERE id = ?", (id_inquilino,))
     result = cursor.fetchone()
-    dia_pago = result['dia_pago'] if result and 'dia_pago' in result else 1
+    dia_pago = result[0] if result else 1
 
     fecha_pago = form.fecha.data
     puntual = 1 if fecha_pago.day <= dia_pago else 0

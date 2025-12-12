@@ -42,28 +42,5 @@ def conection():
             raise RuntimeError(f"No se pudo crear el directorio de la base de datos {db_dir}: {e}")
 
     conn = sqlite3.connect(db_path, timeout=10)
-    # Return rows as plain dicts to make templates and downstream code more robust
-    def dict_row_factory(cursor, row):
-        return {col[0]: row[idx] for idx, col in enumerate(cursor.description)}
-
-    conn.row_factory = dict_row_factory
+    conn.row_factory = sqlite3.Row
     return conn
-
-
-def first_value(row):
-    """Return the first column value from a row returned by the connection.
-
-    Works for dict rows (our dict_row_factory) and for sequence rows.
-    """
-    if row is None:
-        return None
-    if isinstance(row, dict):
-        # return first value in column order
-        for v in row.values():
-            return v
-        return None
-    # fallback for sequences/tuples
-    try:
-        return row[0]
-    except Exception:
-        return None

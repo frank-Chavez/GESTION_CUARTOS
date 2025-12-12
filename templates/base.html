@@ -302,17 +302,14 @@
             </a>
           </li>
           
-          <!-- Botón Cerrar sesión (envía POST directamente sin pedir contraseña) -->
+          <!-- Botón Cerrar sesión dentro de la lista -->
           <li class="mt-4">
-            <form action="{{ url_for('logout') }}" method="post" class="w-full">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-              <button type="submit" class="flex items-center p-2 px-3 w-full text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors group justify-center">
-                <svg class="w-5 h-5 text-white mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                Cerrar sesión
-              </button>
-            </form>
+            <button id="logout-open-btn" type="button" class="flex items-center p-2 px-3 w-full text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors group justify-center">
+              <svg class="w-5 h-5 text-white mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Cerrar sesión
+            </button>
           </li>
         </ul>
       </ul>
@@ -325,7 +322,25 @@
       class="fixed inset-0 bg-black z-40 transition-opacity duration-300 opacity-0 pointer-events-none"
     ></div>
 
-    <!-- Logout confirmation removed; logout now submits directly without password confirmation -->
+    <!-- Modal confirmación cerrar sesión -->
+    <div id="logout-modal" class="fixed inset-0 z-50 hidden items-center justify-center">
+      <div class="absolute inset-0 bg-black/60" id="logout-modal-backdrop"></div>
+      <div class="bg-white dark:bg-dark-card rounded-lg shadow-lg max-w-md w-11/12 p-6 relative z-10">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Confirmar cierre de sesión</h3>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Por seguridad, ingresa tu contraseña para cerrar la sesión.</p>
+        <form id="logout-form" action="{{ url_for('logout') }}" method="post" class="mt-4">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Contraseña</label>
+            <input name="confirm_password" type="password" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-white dark:bg-dark-card text-gray-900 dark:text-white px-3 py-2" />
+          </div>
+          <div class="mt-4 flex justify-end gap-2">
+            <button type="button" id="logout-cancel" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded">Cancelar</button>
+            <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded">Cerrar sesión</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <!-- Mensajes Flash -->
     {% with messages = get_flashed_messages(with_categories=true) %} {% if
@@ -557,6 +572,27 @@
     })();
   </script>
   <script>
-    // Logout modal removed; logout submits directly via POST form
+    // Logout modal handling: abrir/cerrar
+    (function(){
+      const openBtn = document.getElementById('logout-open-btn');
+      const modal = document.getElementById('logout-modal');
+      const backdrop = document.getElementById('logout-modal-backdrop');
+      const cancel = document.getElementById('logout-cancel');
+
+      if (!openBtn || !modal) return;
+
+      function show(){
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+      function hide(){
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+      }
+
+      openBtn.addEventListener('click', function(){ show(); });
+      if (cancel) cancel.addEventListener('click', function(){ hide(); });
+      if (backdrop) backdrop.addEventListener('click', function(){ hide(); });
+    })();
   </script>
 </html>

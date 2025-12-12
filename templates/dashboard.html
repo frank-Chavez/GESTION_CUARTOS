@@ -424,11 +424,11 @@ block content %}
                           </option>
                           {% for cuarto in cuartos_disponibles %}
                           <option
-                            value="{{ cuarto['numero'] }}"
-                            data-precio="{{ cuarto['precio'] }}"
+                            value="{{ cuarto[1] }}"
+                            data-precio="{{ cuarto[3] }}"
                           >
-                            {{ cuarto['numero'] }} - Piso {{ cuarto['piso'] }} (S/{{
-                            "%.2f"|format(cuarto['precio']) }})
+                            {{ cuarto[1] }} - Piso {{ cuarto[2] }} (S/{{
+                            "%.2f"|format(cuarto[3]) }})
                           </option>
                           {% endfor %} {% else %}
                           <option value="" data-precio="0">

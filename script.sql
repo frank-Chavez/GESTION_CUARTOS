@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS usuarios (
+CREATE TABLE usuarios (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT NOT NULL,
     usuario TEXT NOT NULL UNIQUE,
@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
     rol TEXT NOT NULL CHECK(rol IN ('admin', 'usuario')),
     fecha_creacion TEXT NOT NULL
 );
-CREATE TABLE IF NOT EXISTS inquilinos (
+CREATE TABLE sqlite_sequence(name, seq);
+CREATE TABLE inquilinos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT NOT NULL,
     dni TEXT NOT NULL UNIQUE,
@@ -19,21 +20,18 @@ CREATE TABLE IF NOT EXISTS inquilinos (
     apellido TEXT,
     FOREIGN KEY (id_cuarto) REFERENCES cuartos(id)
 );
-CREATE TABLE IF NOT EXISTS pagos (
+CREATE TABLE pagos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_inquilino INTEGER NOT NULL,
     fecha TEXT NOT NULL,
     monto REAL NOT NULL,
-    metodo_pago TEXT DEFAULT 'efectivo',
     observacion TEXT,
     puntual BOOLEAN NOT NULL,
     FOREIGN KEY (id_inquilino) REFERENCES inquilinos(id)
 );
-CREATE TABLE IF NOT EXISTS cuartos (
+CREATE TABLE cuartos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     numero TEXT NOT NULL UNIQUE,
-    piso INTEGER DEFAULT 1,
-    precio REAL DEFAULT 0.0,
     descripcion TEXT,
-    estado TEXT NOT NULL CHECK(estado IN ('disponible', 'ocupado', 'mantenimiento'))
+    estado TEXT NOT NULL CHECK(estado IN ('ocupado', 'libre'))
 );

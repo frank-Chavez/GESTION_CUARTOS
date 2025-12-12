@@ -122,7 +122,7 @@ def agregar():
             cuarto_row = cursor.fetchone()
 
             if cuarto_row:
-                id_cuarto, estado_cuarto = cuarto_row["id"], cuarto_row["estado"]
+                id_cuarto, estado_cuarto = cuarto_row[0], cuarto_row[1]
                 if estado_cuarto == "ocupado":
                     flash("El cuarto ya está ocupado", "error")
                     return redirect(url_for("inquilinos.index"))
@@ -148,10 +148,10 @@ def agregar():
                 cursor.execute(
                     """
                     INSERT INTO pagos 
-                    (id_inquilino, fecha, monto, puntual, metodo_pago, observacion)
-                    VALUES (?, ?, ?, 1, ?, 'Pago al momento de ingreso')
+                    (id_inquilino, fecha, monto, puntual, observacion)
+                    VALUES (?, ?, ?, 1, 'Pago al momento de ingreso')
                     """,
-                    (inquilino_id, fecha_inicio, renta_mensual, 'efectivo'),
+                    (inquilino_id, fecha_inicio, renta_mensual),
                 )
 
         flash("Inquilino agregado exitosamente", "success")
@@ -161,9 +161,7 @@ def agregar():
         flash("No se pudo agregar: datos duplicados o inválidos (DNI único)", "error")
         return redirect(url_for("inquilinos.index"))
     except Exception as e:
-        import traceback
-        print("[ERROR agregar inquilino]", type(e), e, traceback.format_exc())
-        flash(f"Error al agregar inquilino: {type(e).__name__}: {e}", "error")
+        flash(f"Error al agregar inquilino: {str(e)}", "error")
         return redirect(url_for("inquilinos.index"))
 
 

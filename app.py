@@ -3,7 +3,7 @@ from flask_wtf import CSRFProtect
 from flask_wtf import FlaskForm
 from wtforms import StringField, DecimalField, BooleanField, DateField
 from wtforms.validators import DataRequired, NumberRange, Regexp
-from database import conection, first_value
+from database import conection
 from datetime import datetime, timedelta
 
 # removed remember-me token imports
@@ -86,51 +86,6 @@ def ensure_db_initialized():
 ensure_db_initialized()
 
 
-def ensure_schema_migrations():
-    """Apply lightweight schema migrations for existing databases.
-
-    This checks for columns that newer code expects and adds them if missing.
-    It keeps migrations minimal and safe (uses ALTER TABLE ADD COLUMN).
-    """
-    try:
-        conn = conection()
-        cur = conn.cursor()
-        # Check cuartos table columns
-        cur.execute("PRAGMA table_info('cuartos')")
-        cols = [r[1] for r in cur.fetchall()]
-        if 'piso' not in cols:
-            try:
-                cur.execute("ALTER TABLE cuartos ADD COLUMN piso INTEGER DEFAULT 1")
-            except Exception:
-                pass
-        if 'precio' not in cols:
-            try:
-                cur.execute("ALTER TABLE cuartos ADD COLUMN precio REAL DEFAULT 0.0")
-            except Exception:
-                pass
-        # Check pagos table for new columns required by code
-        try:
-            cur.execute("PRAGMA table_info('pagos')")
-            pagos_cols = [r[1] for r in cur.fetchall()]
-            if 'metodo_pago' not in pagos_cols:
-                try:
-                    cur.execute("ALTER TABLE pagos ADD COLUMN metodo_pago TEXT DEFAULT 'efectivo'")
-                except Exception:
-                    pass
-        except Exception:
-            # ignore if pagos table doesn't exist yet
-            pass
-        conn.commit()
-        cur.close()
-        conn.close()
-    except Exception as e:
-        print('Advertencia: error al aplicar migraciones ligeras de esquema:', e)
-
-
-# Ensure schema migrations run at startup to support older DBs
-ensure_schema_migrations()
-
-
 # Remember-me/token-based persistence removed per user request
 
 
@@ -166,50 +121,54 @@ def loguin():
         user = cursor.fetchone()
         cursor.close()
         conn.close()
-        if user:
-            # Support both dict rows (new row_factory) and sequence rows (old)
-            if isinstance(user, dict):
-                pw_hash = user.get('password')
-                uid = user.get('id')
-            else:
-                # tuple/sequence fallback
-                try:
-                    pw_hash = user[2]
-                except Exception:
-                    pw_hash = None
-                try:
-                    uid = user[0]
-                except Exception:
-                    uid = None
-
-            if pw_hash and check_password_hash(pw_hash, password):
-                session["user_id"] = uid
-                # Mantener sesión eliminado: no persistimos entre cierres del navegador
-                session.permanent = False
-                return redirect(url_for("dashboard"))
-            else:
-                error = "Usuario o contraseña incorrectos"
-    else:
-        # Si se envió el formulario pero no pasó validación, mostrar errores para depuración
-        if request.method == 'POST':
-            errs = []
-            try:
-                for f, e in form.errors.items():
-                    errs.append(f + ': ' + '; '.join(e))
-            except Exception:
-                errs.append('error desconocido en validación')
-            error = 'Error en formulario: ' + (', '.join(errs) if errs else 'validación fallida')
+        if user and check_password_hash(user[2], password):
+            session["user_id"] = user[0]
+            # Mantener sesión eliminado: no persistimos entre cierres del navegador
+            session.permanent = False
+            return redirect(url_for("dashboard"))
+        else:
+            error = "Usuario o contraseña incorrectos"
     return render_template("loguin.html", form=form, error=error)
 
 
 @app.route("/logout", methods=["POST"])
 def logout():
-    # Simple logout: clear session and redirect to login
+    # Require confirmation password before logging out
     user_id = session.get("user_id")
-    if user_id:
+    if not user_id:
+        return redirect(url_for("loguin"))
+
+    confirm_password = request.form.get("confirm_password")
+    if not confirm_password:
+        flash("Debes confirmar tu contraseña para cerrar sesión", "warning")
+        return redirect(url_for("dashboard"))
+
+    try:
+        conn = conection()
+        cur = conn.cursor()
+        cur.execute("SELECT password FROM usuarios WHERE id = ?", (user_id,))
+        row = cur.fetchone()
+        cur.close()
+        conn.close()
+    except Exception:
+        flash("Error al verificar la contraseña", "error")
+        return redirect(url_for("dashboard"))
+
+    if not row:
+        # user not found: just clear session
+        session.pop("user_id", None)
+        flash("Sesión cerrada", "success")
+        return redirect(url_for("loguin"))
+
+    stored_hash = row[0]
+    if check_password_hash(stored_hash, confirm_password):
+        # Clear session
         session.clear()
-        flash("Sesión cerrada correctamente.", "success")
-    return redirect(url_for("loguin"))
+        flash("Sesión cerrada", "success")
+        return redirect(url_for("loguin"))
+    else:
+        flash("Contraseña incorrecta. No se cerró la sesión.", "error")
+        return redirect(url_for("dashboard"))
 
 
 @app.route("/dashboard")
@@ -222,7 +181,7 @@ def dashboard():
     # Ganancias por mes
     cursor.execute(
         """
-        SELECT strftime('%Y-%m', fecha) AS mes, SUM(monto) AS total
+        SELECT strftime('%Y-%m', fecha), SUM(monto)
         FROM pagos
         GROUP BY strftime('%Y-%m', fecha)
     """
@@ -233,14 +192,7 @@ def dashboard():
     cursor.execute(
         """
 SELECT 
-    i.id,
     i.nombre,
-    i.apellido,
-    i.dni,
-    i.telefono,
-    i.fecha_ingreso,
-    i.monto_mensual,
-    i.dia_pago,
     c.numero AS cuarto,
     CASE
         WHEN pagos_mes.total IS NULL OR pagos_mes.total = 0 THEN 
@@ -269,17 +221,15 @@ ORDER BY i.nombre
         """
     )
     inquilinos = cursor.fetchall()
-    # Convertir sqlite3.Row a dict para evitar errores de atributo en las plantillas
-    inquilinos = [dict(r) for r in inquilinos]
 
     # Estadísticas para las tarjetas del dashboard
 
     # Total de cuartos y cuartos ocupados
     cursor.execute("SELECT COUNT(*) FROM cuartos")
-    total_cuartos = first_value(cursor.fetchone()) or 0
+    total_cuartos = cursor.fetchone()[0] or 0
 
     cursor.execute("SELECT COUNT(*) FROM cuartos WHERE estado = 'ocupado'")
-    cuartos_ocupados = first_value(cursor.fetchone()) or 0
+    cuartos_ocupados = cursor.fetchone()[0] or 0
 
     # Ganancias del mes actual
     cursor.execute(
@@ -289,11 +239,11 @@ ORDER BY i.nombre
         WHERE strftime('%Y-%m', fecha) = strftime('%Y-%m', 'now')
     """
     )
-    ganancias_mes = first_value(cursor.fetchone()) or 0
+    ganancias_mes = cursor.fetchone()[0] or 0
 
     # Total de inquilinos activos
     cursor.execute("SELECT COUNT(*) FROM inquilinos")
-    total_inquilinos = first_value(cursor.fetchone()) or 0
+    total_inquilinos = cursor.fetchone()[0] or 0
 
     # Pagos pendientes (inquilinos sin pago en los últimos 30 días)
     cursor.execute(
@@ -309,7 +259,7 @@ ORDER BY i.nombre
            OR julianday('now') - julianday(ultimo.ultimo_pago) > 30
     """
     )
-    pagos_pendientes = first_value(cursor.fetchone()) or 0
+    pagos_pendientes = cursor.fetchone()[0] or 0
 
     # Obtener cuartos disponibles para el formulario
     cursor.execute(
@@ -321,14 +271,13 @@ ORDER BY i.nombre
         """
     )
     cuartos_disponibles = cursor.fetchall()
-    cuartos_disponibles = [dict(r) for r in cuartos_disponibles]
 
     cursor.close()
     conn.close()
 
-    # Datos para el gráfico (usar claves porque row_factory devuelve dicts)
-    meses = [row.get('mes') or list(row.values())[0] for row in data]
-    ganancias = [row.get('total') or list(row.values())[1] for row in data]
+    # Datos para el gráfico
+    meses = [row[0] for row in data]
+    ganancias = [row[1] for row in data]
 
     return render_template(
         "dashboard.html",
