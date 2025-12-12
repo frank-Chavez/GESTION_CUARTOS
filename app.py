@@ -61,8 +61,20 @@ def ensure_db_initialized():
             if os.path.exists(sql_path):
                 with open(sql_path, "r", encoding="utf-8") as f:
                     sql = f.read()
-                cur.executescript(sql)
-                conn.commit()
+                try:
+                    cur.executescript(sql)
+                    conn.commit()
+                except sqlite3.OperationalError as err:
+                    # Some SQLite internal objects (like sqlite_sequence) are
+                    # reserved. If the initialization script attempts to create
+                    # such an object the error is safe to ignore — the DB may
+                    # already exist or be partially created. Log a concise
+                    # message and continue without crashing the app.
+                    msg = str(err)
+                    if 'sqlite_sequence' in msg or 'reserved for internal use' in msg:
+                        print('Advertencia: inicialización DB omitida debido a objeto interno existente:', msg)
+                    else:
+                        raise
                 # Create a default admin user to allow initial login. Password: 'admin'
                 try:
                     pw = generate_password_hash("admin")
