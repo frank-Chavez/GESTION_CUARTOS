@@ -53,6 +53,25 @@ def ensure_db_initialized():
     try:
         conn = conection()
         cur = conn.cursor()
+        # Ensure expected columns exist (migrations for older DBs)
+        try:
+            cur.execute("PRAGMA table_info(cuartos);")
+            cols = [r[1] for r in cur.fetchall()]
+            # If `piso` or `precio` missing, add them
+            if 'piso' not in cols:
+                try:
+                    cur.execute("ALTER TABLE cuartos ADD COLUMN piso INTEGER NOT NULL DEFAULT 1;")
+                except Exception:
+                    pass
+            if 'precio' not in cols:
+                try:
+                    cur.execute("ALTER TABLE cuartos ADD COLUMN precio REAL NOT NULL DEFAULT 0.0;")
+                except Exception:
+                    pass
+            conn.commit()
+        except Exception:
+            # ignore pragma errors
+            pass
         cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='usuarios';")
         row = cur.fetchone()
         if row is None:
