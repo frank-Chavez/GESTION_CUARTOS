@@ -177,9 +177,11 @@ def loguin():
     return render_template("loguin.html", form=form, error=error)
 
 
-@app.route("/logout", methods=["POST"])
+@csrf.exempt
+@app.route("/logout", methods=["GET", "POST"])
 def logout():
-    # Simplified logout: do not require password confirmation.
+    # Simplified logout: do not require password confirmation or CSRF token.
+    # Accept GET so the UI can use a simple link to log out without a form.
     user_id = session.get("user_id")
     if not user_id:
         return redirect(url_for("loguin"))
