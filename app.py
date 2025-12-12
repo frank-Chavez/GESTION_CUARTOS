@@ -91,7 +91,22 @@ def ensure_db_initialized():
         conn.close()
     except Exception as e:
         # Do not crash the app if DB initialization fails; log instead.
-        print("Advertencia: no se pudo inicializar la base de datos automáticamente:", e)
+        # If the error mentions sqlite_sequence, give a clearer hint to the
+        # operator because this usually means an existing/partial DB file
+        # contains internal SQLite objects that the init script attempted
+        # to create.
+        msg = str(e)
+        if 'sqlite_sequence' in msg or 'reserved for internal use' in msg:
+            print("Advertencia: no se pudo inicializar la base de datos automáticamente:", msg)
+            print("Sugerencia: el archivo SQLite existente puede contener tablas internas. Si quieres recrear la DB, elimina el archivo de base de datos persistente y redeploya.")
+        else:
+            print("Advertencia: no se pudo inicializar la base de datos automáticamente:", msg)
+            try:
+                import traceback
+
+                traceback.print_exc()
+            except Exception:
+                pass
 
 
 # Intentamos inicializar la base de datos en arranque (útil en despliegues)
