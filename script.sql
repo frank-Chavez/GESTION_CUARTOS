@@ -31,6 +31,8 @@ CREATE TABLE pagos (
 CREATE TABLE cuartos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     numero TEXT NOT NULL UNIQUE,
+    piso INTEGER NOT NULL DEFAULT 1,
+    precio REAL NOT NULL DEFAULT 0.0,
     descripcion TEXT,
-    estado TEXT NOT NULL CHECK(estado IN ('ocupado', 'libre'))
+    estado TEXT NOT NULL CHECK(estado IN ('ocupado', 'libre', 'mantenimiento'))
 );
