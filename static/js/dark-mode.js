@@ -123,5 +123,12 @@
         window.toggleDarkMode();
       }
     });
+
+    // Asegurar que los iconos reflejen el tema actual cuando el DOM ya existe
+    try {
+      updateIcons(document.documentElement.classList.contains(DARK_CLASS));
+    } catch (e) {
+      // ignorar si los elementos no existen o hay algún error
+    }
   });
 })();
