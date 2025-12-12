@@ -179,42 +179,15 @@ def loguin():
 
 @app.route("/logout", methods=["POST"])
 def logout():
-    # Require confirmation password before logging out
+    # Simplified logout: do not require password confirmation.
     user_id = session.get("user_id")
     if not user_id:
         return redirect(url_for("loguin"))
 
-    confirm_password = request.form.get("confirm_password")
-    if not confirm_password:
-        flash("Debes confirmar tu contraseña para cerrar sesión", "warning")
-        return redirect(url_for("dashboard"))
-
-    try:
-        conn = conection()
-        cur = conn.cursor()
-        cur.execute("SELECT password FROM usuarios WHERE id = ?", (user_id,))
-        row = cur.fetchone()
-        cur.close()
-        conn.close()
-    except Exception:
-        flash("Error al verificar la contraseña", "error")
-        return redirect(url_for("dashboard"))
-
-    if not row:
-        # user not found: just clear session
-        session.pop("user_id", None)
-        flash("Sesión cerrada", "success")
-        return redirect(url_for("loguin"))
-
-    stored_hash = row[0]
-    if check_password_hash(stored_hash, confirm_password):
-        # Clear session
-        session.clear()
-        flash("Sesión cerrada", "success")
-        return redirect(url_for("loguin"))
-    else:
-        flash("Contraseña incorrecta. No se cerró la sesión.", "error")
-        return redirect(url_for("dashboard"))
+    # Clear session and redirect to login
+    session.clear()
+    flash("Sesión cerrada", "success")
+    return redirect(url_for("loguin"))
 
 
 @app.route("/dashboard")

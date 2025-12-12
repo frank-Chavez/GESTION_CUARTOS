@@ -326,14 +326,10 @@
     <div id="logout-modal" class="fixed inset-0 z-50 hidden items-center justify-center">
       <div class="absolute inset-0 bg-black/60" id="logout-modal-backdrop"></div>
       <div class="bg-white dark:bg-dark-card rounded-lg shadow-lg max-w-md w-11/12 p-6 relative z-10">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Confirmar cierre de sesión</h3>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Por seguridad, ingresa tu contraseña para cerrar la sesión.</p>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Cerrar sesión</h3>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">¿Estás seguro que quieres cerrar la sesión?</p>
         <form id="logout-form" action="{{ url_for('logout') }}" method="post" class="mt-4">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Contraseña</label>
-            <input name="confirm_password" type="password" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-white dark:bg-dark-card text-gray-900 dark:text-white px-3 py-2" />
-          </div>
           <div class="mt-4 flex justify-end gap-2">
             <button type="button" id="logout-cancel" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded">Cancelar</button>
             <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded">Cerrar sesión</button>
