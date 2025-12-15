@@ -72,6 +72,19 @@ def ensure_db_initialized():
         except Exception:
             # ignore pragma errors
             pass
+        # Ensure pagos has metodo_pago column (migrations for older DBs)
+        try:
+            cur.execute("PRAGMA table_info(pagos);")
+            pagos_cols = [r[1] for r in cur.fetchall()]
+            if 'metodo_pago' not in pagos_cols:
+                try:
+                    cur.execute("ALTER TABLE pagos ADD COLUMN metodo_pago TEXT DEFAULT 'efectivo';")
+                    conn.commit()
+                except Exception:
+                    # ignore if cannot alter (e.g., read-only FS)
+                    pass
+        except Exception:
+            pass
         cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='usuarios';")
         row = cur.fetchone()
         if row is None:
