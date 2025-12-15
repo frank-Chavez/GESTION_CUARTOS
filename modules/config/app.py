@@ -21,7 +21,7 @@ class CuartoForm(FlaskForm):
     numero = StringField("Número", validators=[DataRequired()])
     estado = SelectField(
         "Estado",
-        choices=[("disponible", "Disponible"), ("ocupado", "Ocupado"), ("mantenimiento", "Mantenimiento")],
+        choices=[("libre", "Disponible"), ("ocupado", "Ocupado"), ("mantenimiento", "Mantenimiento")],
         validators=[DataRequired()],
     )
 
@@ -55,7 +55,7 @@ def index():
     cursor.execute("SELECT COUNT(*) FROM cuartos")
     total_cuartos = cursor.fetchone()[0] or 0
 
-    cursor.execute("SELECT COUNT(*) FROM cuartos WHERE estado = 'disponible'")
+    cursor.execute("SELECT COUNT(*) FROM cuartos WHERE estado = 'libre'")
     cuartos_disponibles = cursor.fetchone()[0] or 0
 
     # Cargar clave pública VAPID para uso en la plantilla (si existe)
@@ -377,7 +377,7 @@ def editar_cuarto(id):
     """Editar estado de un cuarto"""
     estado = request.form.get("estado")
 
-    if estado not in ["disponible", "ocupado", "mantenimiento"]:
+    if estado not in ["libre", "ocupado", "mantenimiento"]:
         flash("Estado inválido", "error")
         return redirect(url_for("config.index"))
 

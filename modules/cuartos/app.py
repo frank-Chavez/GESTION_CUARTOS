@@ -84,7 +84,6 @@ def agregar():
     descripcion = form.descripcion.data.strip() if form.descripcion.data else ""
     estado = form.estado.data
 
-
     # Debug: imprimir el valor de numero
     print(f"[DEBUG] Valor recibido para numero de cuarto: '{numero}'")
     if not numero:
@@ -93,7 +92,6 @@ def agregar():
 
     conn = conection()
     cursor = conn.cursor()
-
 
     try:
         cursor.execute(

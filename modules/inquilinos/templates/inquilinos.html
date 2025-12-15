@@ -911,11 +911,15 @@ block content %}
         document.addEventListener('DOMContentLoaded', function () {
           const selectCuarto = document.getElementById('select-cuarto');
           const inputRenta = document.getElementById('input-renta');
-          selectCuarto.addEventListener('change', function () {
-            const selected = selectCuarto.options[selectCuarto.selectedIndex];
-            const precio = selected.getAttribute('data-precio');
-            inputRenta.value = precio ? parseFloat(precio).toFixed(2) : '';
-          });
+          if (selectCuarto && inputRenta) {
+            selectCuarto.addEventListener('change', function () {
+              const selected = selectCuarto.options[selectCuarto.selectedIndex];
+              const precio = selected
+                ? selected.getAttribute('data-precio')
+                : null;
+              inputRenta.value = precio ? parseFloat(precio).toFixed(2) : '';
+            });
+          }
         });
       </script>
 

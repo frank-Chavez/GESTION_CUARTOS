@@ -552,26 +552,26 @@ block content %}
             <p
               class="font-poppins text-[15px] font-semibold truncate text-gray-900 dark:text-white"
             >
-              {{ p['nombre'] }} {{ p['apellido'] }}
+              {{ p[1] }} {{ p[2] }}
             </p>
             <div class="flex-shrink-0">
-              {% if p['estado_pago'] == 'Pagado' %}
+              {% if p[8] == 'Pagado' %}
               <p
                 class="font-poppins px-3 py-1 rounded-3xl bg-[#16a249] text-[11px] font-semibold text-white whitespace-nowrap"
               >
-                {{ p['estado_pago'] }}
+                {{ p[8] }}
               </p>
-              {% elif p['estado_pago'] == 'Atrasado' %}
+              {% elif p[8] == 'Atrasado' %}
               <p
                 class="font-poppins px-3 py-1 rounded-3xl bg-red-500 text-[11px] font-semibold text-white whitespace-nowrap"
               >
-                {{ p['estado_pago'] }}
+                {{ p[8] }}
               </p>
               {% else %}
               <p
                 class="font-poppins px-3 py-1 rounded-3xl bg-[#ef893f] text-[11px] font-semibold text-white whitespace-nowrap"
               >
-                {{ p['estado_pago'] }}
+                {{ p[8] }}
               </p>
               {% endif %}
             </div>
@@ -582,7 +582,7 @@ block content %}
                 Cuarto
               </p>
               <p class="font-poppins font-medium text-[14px] text-[#ef7c2b]">
-                {{ p['cuarto'] }}
+                {{ p[5] }}
               </p>
             </div>
             <div class="flex sm:flex-row flex-col gap-1">
@@ -594,7 +594,7 @@ block content %}
               <p
                 class="font-poppins text-[14px] text-[#8a8175] dark:text-dark-muted"
               >
-                {{ p['fecha_ingreso'] }}
+                {{ p[7] }}
               </p>
             </div>
           </div>
@@ -604,8 +604,8 @@ block content %}
         >
           <!-- Botón Editar -->
           <button
-            data-modal-target="editar-modal-{{ p['id'] }}"
-            data-modal-toggle="editar-modal-{{ p['id'] }}"
+            data-modal-target="editar-modal-{{ p[0] }}"
+            data-modal-toggle="editar-modal-{{ p[0] }}"
             class="p-2 hover:bg-gray-100 dark:hover:bg-dark-border rounded-lg transition-colors flex-shrink-0"
             aria-label="Editar inquilino"
           >
@@ -617,8 +617,8 @@ block content %}
           </button>
           <!-- Botón Eliminar -->
           <button
-            data-modal-target="eliminar-modal-{{ p['id'] }}"
-            data-modal-toggle="eliminar-modal-{{ p['id'] }}"
+            data-modal-target="eliminar-modal-{{ p[0] }}"
+            data-modal-toggle="eliminar-modal-{{ p[0] }}"
             class="p-2 hover:bg-gray-100 dark:hover:bg-dark-border rounded-lg transition-colors flex-shrink-0"
             aria-label="Eliminar inquilino"
           >
@@ -633,7 +633,7 @@ block content %}
 
       <!-- Modal Editar Inquilino -->
       <div
-        id="editar-modal-{{ p['id'] }}"
+        id="editar-modal-{{ p[0] }}"
         tabindex="-1"
         aria-hidden="true"
         class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full bg-[#333332a3] dark:bg-[#000000bf]"
@@ -657,7 +657,7 @@ block content %}
               </div>
               <button
                 type="button"
-                data-modal-hide="editar-modal-{{ p['id'] }}"
+                data-modal-hide="editar-modal-{{ p[0] }}"
                 class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-border transition-colors"
               >
                 <img
@@ -668,37 +668,37 @@ block content %}
               </button>
             </div>
             <form
-              action="{{ url_for('editar_inquilino', id=p['id']) }}"
+              action="{{ url_for('editar_inquilino', id=p[0]) }}"
               method="POST"
               class="pt-2 md:pt-6"
             >
               {{ form.csrf_token }}
               <div class="flex flex-col gap-1 mb-4">
                 <label
-                  for="nombre_edit_{{ p['id'] }}"
+                  for="nombre_edit_{{ p[0] }}"
                   class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
                   >Nombre</label
                 >
                 <input
                   type="text"
-                  id="nombre_edit_{{ p['id'] }}"
+                  id="nombre_edit_{{ p[0] }}"
                   name="nombre"
-                  value="{{ p['nombre'] }}"
+                  value="{{ p[1] }}"
                   class="border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors"
                   required
                 />
               </div>
               <div class="flex flex-col gap-1 mb-4">
                 <label
-                  for="apellido_edit_{{ p['id'] }}"
+                  for="apellido_edit_{{ p[0] }}"
                   class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
                   >Apellido</label
                 >
                 <input
                   type="text"
-                  id="apellido_edit_{{ p['id'] }}"
+                  id="apellido_edit_{{ p[0] }}"
                   name="apellido"
-                  value="{{ p['apellido'] }}"
+                  value="{{ p[2] }}"
                   class="border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors"
                   required
                 />
@@ -706,46 +706,46 @@ block content %}
               <div class="flex flex-col sm:flex-row gap-2">
                 <div class="flex flex-col gap-1 mb-4 flex-1">
                   <label
-                    for="dni_edit_{{ p['id'] }}"
+                    for="dni_edit_{{ p[0] }}"
                     class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
                     >DNI</label
                   >
                   <input
                     type="text"
-                    id="dni_edit_{{ p['id'] }}"
+                    id="dni_edit_{{ p[0] }}"
                     name="dni"
-                    value="{{ p['dni'] }}"
+                    value="{{ p[3] }}"
                     class="border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg w-full placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors"
                     required
                   />
                 </div>
                 <div class="flex flex-col gap-1 mb-4 flex-1">
                   <label
-                    for="telefono_edit_{{ p['id'] }}"
+                    for="telefono_edit_{{ p[0] }}"
                     class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
                     >Teléfono</label
                   >
                   <input
                     type="text"
-                    id="telefono_edit_{{ p['id'] }}"
+                    id="telefono_edit_{{ p[0] }}"
                     name="telefono"
-                    value="{{ p['telefono'] }}"
+                    value="{{ p[4] }}"
                     class="border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg w-full placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors"
                     required
                   />
                 </div>
               </div>
               <div class="flex flex-col gap-1 mb-4">
-                <label
-                  for="fecha_inicio_edit_{{ p['id'] }}"
+                  <label
+                    for="fecha_inicio_edit_{{ p[0] }}"
                   class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
                   >Fecha de inicio</label
                 >
                 <input
-                  type="date"
-                  id="fecha_inicio_edit_{{ p['id'] }}"
-                  name="fecha_inicio"
-                  value="{{ p['fecha_ingreso'] }}"
+                    type="date"
+                    id="fecha_inicio_edit_{{ p[0] }}"
+                    name="fecha_inicio"
+                    value="{{ p[7] }}"
                   class="border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg w-full placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors"
                   required
                 />
@@ -753,30 +753,30 @@ block content %}
               <div class="flex flex-col sm:flex-row gap-2">
                 <div class="flex flex-col gap-1 mb-4 flex-1">
                   <label
-                    for="cuarto_edit_{{ p['id'] }}"
+                    for="cuarto_edit_{{ p[0] }}"
                     class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
                     >Cuarto</label
                   >
                   <input
                     type="text"
-                    id="cuarto_edit_{{ p['id'] }}"
+                    id="cuarto_edit_{{ p[0] }}"
                     name="cuarto"
-                    value="{{ p['cuarto'] }}"
+                    value="{{ p[5] }}"
                     class="border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg w-full placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors"
                     required
                   />
                 </div>
                 <div class="flex flex-col gap-1 flex-1">
                   <label
-                    for="renta_mensual_edit_{{ p['id'] }}"
+                    for="renta_mensual_edit_{{ p[0] }}"
                     class="font-poppins font-semibold text-[14px] text-gray-900 dark:text-white"
                     >Renta mensual</label
                   >
                   <input
                     type="text"
-                    id="renta_mensual_edit_{{ p['id'] }}"
+                    id="renta_mensual_edit_{{ p[0] }}"
                     name="renta_mensual"
-                    value="{{ p['monto_mensual'] }}"
+                    value="{{ p[6] }}"
                     class="border-gray-300 dark:border-dark-border dark:bg-dark-bg dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#d1d5db] focus:ring-2 focus:ring-[#ef893f] focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-dark-bg w-full placeholder:text-gray-400 dark:placeholder:text-dark-muted text-sm transition-colors"
                     required
                   />
@@ -791,7 +791,7 @@ block content %}
                 </button>
                 <button
                   type="button"
-                  data-modal-hide="editar-modal-{{ p['id'] }}"
+                  data-modal-hide="editar-modal-{{ p[0] }}"
                   class="p-2 h-12 w-full sm:w-40 m-2 bg-white dark:bg-dark-bg border-2 border-gray-200 dark:border-dark-border rounded-lg text-gray-900 dark:text-white font-semibold hover:bg-[#ef893f] hover:text-white hover:border-transparent transition-all duration-300"
                 >
                   Cancelar
@@ -804,7 +804,7 @@ block content %}
 
       <!-- Modal Eliminar Inquilino -->
       <div
-        id="eliminar-modal-{{ p['id'] }}"
+        id="eliminar-modal-{{ p[0] }}"
         tabindex="-1"
         aria-hidden="true"
         class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full bg-[#333332a3] dark:bg-[#000000bf]"
@@ -828,7 +828,7 @@ block content %}
               </div>
               <button
                 type="button"
-                data-modal-hide="eliminar-modal-{{ p['id'] }}"
+                data-modal-hide="eliminar-modal-{{ p[0] }}"
                 class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-border transition-colors"
               >
                 <img
@@ -860,12 +860,12 @@ block content %}
                     <p
                       class="font-poppins font-semibold text-red-700 dark:text-red-400"
                     >
-                      {{ p['nombre'] }} {{ p['apellido'] }}
+                      {{ p[1] }} {{ p[2] }}
                     </p>
                     <p
                       class="font-poppins text-sm text-red-600 dark:text-red-300"
                     >
-                      Cuarto {{ p['cuarto'] }}
+                      Cuarto {{ p[5] }}
                     </p>
                   </div>
                 </div>
@@ -877,7 +877,7 @@ block content %}
                 pagos registrados. El cuarto quedará disponible.
               </p>
               <form
-                action="{{ url_for('eliminar_inquilino', id=p['id']) }}"
+                action="{{ url_for('eliminar_inquilino', id=p[0]) }}"
                 method="POST"
               >
                 {{ form.csrf_token }}
@@ -890,7 +890,7 @@ block content %}
                   </button>
                   <button
                     type="button"
-                    data-modal-hide="eliminar-modal-{{ p['id'] }}"
+                    data-modal-hide="eliminar-modal-{{ p[0] }}"
                     class="p-2 h-12 w-full sm:w-40 m-2 bg-white dark:bg-dark-bg border-2 border-gray-200 dark:border-dark-border rounded-lg text-gray-900 dark:text-white font-semibold hover:bg-gray-100 dark:hover:bg-dark-border transition-all duration-300"
                   >
                     Cancelar

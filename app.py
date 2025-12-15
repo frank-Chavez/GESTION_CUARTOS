@@ -212,33 +212,40 @@ def dashboard():
     # Pagos recientes (4)
     cursor.execute(
         """
-SELECT 
-    i.nombre,
-    c.numero AS cuarto,
-    CASE
-        WHEN pagos_mes.total IS NULL OR pagos_mes.total = 0 THEN 
+        SELECT 
+            i.id,
+            i.nombre,
+            i.apellido,
+            i.dni,
+            i.telefono,
+            c.numero AS cuarto,
+            i.monto_mensual,
+            strftime('%d/%m/%Y', i.fecha_ingreso) AS fecha_ingreso,
             CASE 
-                WHEN ultimo.ultimo_pago IS NOT NULL AND julianday('now') - julianday(ultimo.ultimo_pago) > 30 THEN 'Atrasado'
+                WHEN pagos_mes.total IS NULL OR pagos_mes.total = 0 THEN 
+                    CASE 
+                        WHEN ultimo.ultimo_pago IS NOT NULL AND julianday('now') - julianday(ultimo.ultimo_pago) > 30 THEN 'Atrasado'
+                        ELSE 'Pendiente'
+                    END
+                WHEN pagos_mes.total < i.monto_mensual THEN 'Pendiente'
+                WHEN pagos_mes.total >= i.monto_mensual THEN 'Pagado'
                 ELSE 'Pendiente'
-            END
-        WHEN pagos_mes.total < i.monto_mensual THEN 'Pendiente'
-        WHEN pagos_mes.total >= i.monto_mensual THEN 'Pagado'
-        ELSE 'Pendiente'
-    END AS estado_pago
-FROM inquilinos i
-JOIN cuartos c ON i.id_cuarto = c.id
-LEFT JOIN (
-    SELECT id_inquilino, SUM(monto) AS total
-    FROM pagos
-    WHERE strftime('%Y-%m', fecha) = strftime('%Y-%m', 'now')
-    GROUP BY id_inquilino
-) pagos_mes ON i.id = pagos_mes.id_inquilino
-LEFT JOIN (
-    SELECT id_inquilino, MAX(fecha) AS ultimo_pago
-    FROM pagos
-    GROUP BY id_inquilino
-) ultimo ON i.id = ultimo.id_inquilino
-ORDER BY i.nombre
+            END AS estado_pago,
+            COALESCE(i.monto_mensual - pagos_mes.total, i.monto_mensual) AS monto_pendiente
+        FROM inquilinos i
+        JOIN cuartos c ON i.id_cuarto = c.id
+        LEFT JOIN (
+            SELECT id_inquilino, SUM(monto) AS total
+            FROM pagos
+            WHERE strftime('%Y-%m', fecha) = strftime('%Y-%m', 'now')
+            GROUP BY id_inquilino
+        ) pagos_mes ON i.id = pagos_mes.id_inquilino
+        LEFT JOIN (
+            SELECT id_inquilino, MAX(fecha) AS ultimo_pago
+            FROM pagos
+            GROUP BY id_inquilino
+        ) ultimo ON i.id = ultimo.id_inquilino
+        ORDER BY i.nombre
         """
     )
     inquilinos = cursor.fetchall()
@@ -282,12 +289,42 @@ ORDER BY i.nombre
     )
     pagos_pendientes = cursor.fetchone()[0] or 0
 
+    # Pagos recientes (mostrar pagos registrados desde el módulo de pagos)
+    cursor.execute(
+        """
+        SELECT p.id, i.nombre || ' ' || i.apellido AS nombre, c.numero AS cuarto,
+               p.monto, strftime('%d/%m/%Y', p.fecha) AS fecha, p.puntual, p.metodo_pago
+        FROM pagos p
+        JOIN inquilinos i ON p.id_inquilino = i.id
+        LEFT JOIN cuartos c ON i.id_cuarto = c.id
+        ORDER BY p.fecha DESC
+        LIMIT 4
+        """
+    )
+    pagos_recientes_rows = cursor.fetchall()
+    # Convertir a dicts para que las plantillas accedan por nombre
+    try:
+        pagos_recientes = [dict(r) for r in pagos_recientes_rows]
+    except Exception:
+        pagos_recientes = [
+            {
+                "id": r[0],
+                "nombre": r[1],
+                "cuarto": r[2],
+                "monto": r[3],
+                "fecha": r[4],
+                "puntual": r[5],
+                "metodo_pago": r[6],
+            }
+            for r in pagos_recientes_rows
+        ]
+
     # Obtener cuartos disponibles para el formulario
     cursor.execute(
         """
         SELECT id, numero, piso, precio 
         FROM cuartos 
-        WHERE estado = 'disponible'
+        WHERE estado = 'libre'
         ORDER BY numero
         """
     )
@@ -312,6 +349,7 @@ ORDER BY i.nombre
         pagos_pendientes=pagos_pendientes,
         form=InquilinoForm(),
         cuartos_disponibles=cuartos_disponibles,
+        Pagos=pagos_recientes,
     )
 
 
@@ -490,7 +528,7 @@ def eliminar_inquilino(id):
             cursor.execute("DELETE FROM inquilinos WHERE id = ?", (id,))
 
             # Liberar el cuarto
-            cursor.execute("UPDATE cuartos SET estado = 'disponible' WHERE id = ?", (id_cuarto,))
+            cursor.execute("UPDATE cuartos SET estado = 'libre' WHERE id = ?", (id_cuarto,))
 
         flash("Inquilino eliminado exitosamente", "success")
         return redirect(url_for("dashboard"))

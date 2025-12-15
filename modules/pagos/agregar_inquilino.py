@@ -10,8 +10,11 @@ agregar_inquilino_bp = Blueprint(
 def form():
     conn = conection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, numero, piso, precio FROM cuartos WHERE estado = 'disponible' ORDER BY numero")
+    cursor.execute("SELECT id, numero, piso, precio FROM cuartos WHERE estado = 'libre' ORDER BY numero")
     cuartos_disponibles = cursor.fetchall()
+    print(f"[DEBUG] Cuartos libres encontrados: {len(cuartos_disponibles)}")
+    for c in cuartos_disponibles:
+        print(f"[DEBUG] Cuarto: id={c[0]}, numero={c[1]}, piso={c[2]}, precio={c[3]}")
     cursor.close()
     conn.close()
     return render_template("agregar_inquilino_dashboard.html", cuartos_disponibles=cuartos_disponibles)

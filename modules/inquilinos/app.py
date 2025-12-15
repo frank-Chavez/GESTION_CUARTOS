@@ -79,7 +79,7 @@ def index():
         """
         SELECT id, numero, piso, precio 
         FROM cuartos 
-        WHERE estado = 'disponible'
+        WHERE estado = 'libre'
         ORDER BY numero
     """
     )
@@ -242,8 +242,8 @@ def eliminar(id):
                 # Eliminar el inquilino
                 cursor.execute("DELETE FROM inquilinos WHERE id = ?", (id,))
 
-                # Liberar el cuarto (estado debe ser 'disponible' según el CHECK constraint)
-                cursor.execute("UPDATE cuartos SET estado = 'disponible' WHERE id = ?", (id_cuarto,))
+                # Liberar el cuarto (estado debe ser 'libre' según el CHECK constraint)
+                cursor.execute("UPDATE cuartos SET estado = 'libre' WHERE id = ?", (id_cuarto,))
 
                 flash("Inquilino eliminado exitosamente", "success")
             else:
