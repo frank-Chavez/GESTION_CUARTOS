@@ -150,8 +150,8 @@ block content %}
             <td class="py-4 px-4 text-gray-700 dark:text-gray-300">S/{{ "%.0f"|format(cuarto[3]) }}</td>
             <td class="py-4 px-4 text-gray-700 dark:text-gray-300">{{ cuarto[6] or '-' }}</td>
             <td class="py-4 px-4">
-              <span class="px-3 py-1 rounded-full text-xs font-medium {% if cuarto[5] == 'disponible' %}bg-green-500 text-white{% elif cuarto[5] == 'ocupado' %}bg-[#ef893f] text-white{% else %}bg-red-500 text-white{% endif %}">
-                {{ cuarto[5]|capitalize }}
+              <span class="px-3 py-1 rounded-full text-xs font-medium {% if cuarto[5] == 'libre' %}bg-green-500 text-white{% elif cuarto[5] == 'ocupado' %}bg-[#ef893f] text-white{% else %}bg-red-500 text-white{% endif %}">
+                {% if cuarto[5] == 'libre' %}Disponible{% elif cuarto[5] == 'ocupado' %}Ocupado{% elif cuarto[5] == 'mantenimiento' %}Mantenimiento{% else %}{{ cuarto[5]|capitalize }}{% endif %}
               </span>
             </td>
             <td class="py-4 px-4">
@@ -310,7 +310,7 @@ block content %}
                 class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#ef893f] focus:border-[#ef893f] block w-full p-3 dark:bg-[#3d2a1f] dark:border-[#3d2a1f] dark:text-white"
                 required
               >
-                <option value="disponible">Disponible</option>
+                <option value="libre">Disponible</option>
                 <option value="ocupado">Ocupado</option>
                 <option value="mantenimiento">Mantenimiento</option>
               </select>
@@ -448,7 +448,7 @@ block content %}
                 class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#ef893f] focus:border-[#ef893f] block w-full p-3 dark:bg-[#3d2a1f] dark:border-[#3d2a1f] dark:text-white"
                 required
               >
-                <option value="disponible">Disponible</option>
+                <option value="libre">Disponible</option>
                 <option value="ocupado">Ocupado</option>
                 <option value="mantenimiento">Mantenimiento</option>
               </select>
@@ -746,14 +746,18 @@ block content %}
           document.getElementById("view_inquilino").textContent = data.inquilino || 'Sin inquilino';
           // Estado con colores
           const estadoEl = document.getElementById("view_estado");
-          estadoEl.textContent = data.estado.charAt(0).toUpperCase() + data.estado.slice(1);
           estadoEl.className = 'px-3 py-1 rounded-full text-xs font-medium ';
-          if (data.estado === 'disponible') {
+          if (data.estado === 'libre') {
+            estadoEl.textContent = 'Disponible';
             estadoEl.className += 'bg-green-500 text-white';
           } else if (data.estado === 'ocupado') {
+            estadoEl.textContent = 'Ocupado';
             estadoEl.className += 'bg-[#ef893f] text-white';
-          } else {
+          } else if (data.estado === 'mantenimiento') {
+            estadoEl.textContent = 'Mantenimiento';
             estadoEl.className += 'bg-red-500 text-white';
+          } else {
+            estadoEl.textContent = data.estado.charAt(0).toUpperCase() + data.estado.slice(1);
           }
           // Mostrar modal
           const modal = document.getElementById("ver-cuarto-modal");

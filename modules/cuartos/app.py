@@ -15,7 +15,7 @@ class CuartoForm(FlaskForm):
     precio = DecimalField(validators=[DataRequired(), NumberRange(min=0)])
     descripcion = TextAreaField(validators=[Optional()])
     estado = SelectField(
-        choices=[("disponible", "Disponible"), ("ocupado", "Ocupado"), ("mantenimiento", "Mantenimiento")],
+        choices=[("libre", "Disponible"), ("ocupado", "Ocupado"), ("mantenimiento", "Mantenimiento")],
         validators=[DataRequired()],
     )
 
@@ -52,7 +52,7 @@ def index():
     cursor.execute("SELECT COUNT(*) FROM cuartos")
     total = cursor.fetchone()[0]
 
-    cursor.execute("SELECT COUNT(*) FROM cuartos WHERE estado = 'disponible'")
+    cursor.execute("SELECT COUNT(*) FROM cuartos WHERE estado = 'libre'")
     disponibles = cursor.fetchone()[0]
 
     cursor.execute("SELECT COUNT(*) FROM cuartos WHERE estado = 'ocupado'")
@@ -84,8 +84,16 @@ def agregar():
     descripcion = form.descripcion.data.strip() if form.descripcion.data else ""
     estado = form.estado.data
 
+
+    # Debug: imprimir el valor de numero
+    print(f"[DEBUG] Valor recibido para numero de cuarto: '{numero}'")
+    if not numero:
+        flash("El campo 'Número de cuarto' no puede estar vacío.", "error")
+        return redirect(url_for("cuartos.index"))
+
     conn = conection()
     cursor = conn.cursor()
+
 
     try:
         cursor.execute(
@@ -94,8 +102,8 @@ def agregar():
         )
         conn.commit()
         flash("Cuarto agregado correctamente", "success")
-    except sqlite3.IntegrityError:
-        flash("El número de cuarto ya existe", "error")
+    except sqlite3.IntegrityError as e:
+        flash(f"Error de integridad: {str(e)}", "error")
     except Exception as e:
         flash(f"Error al agregar cuarto: {str(e)}", "error")
     finally:
